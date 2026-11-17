@@ -122,7 +122,7 @@
       showToast("Kode kartu tidak ditemukan!", "error");
       setTimeout(() => window.location.replace("index.html"), 2000);
     } else {
-      document.getElementById("display-code").innerText = cardCode;
+      document.getElementById("display-code-input").value = cardCode;
     }
 
     async function handleActivation(e) {
