@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>PINGO — Satu Sentuhan, Langsung Terhubung.</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Supabase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f4f8ff; }
+    .nav-active { background-color: #e6f2ff; color: #0051cc; font-weight: 700; border: 1px solid #99caff; }
+    .mode-active { border: 2px solid #ff9900; background-color: #fff8eb; }
+    .pingo-gradient { background: linear-gradient(135deg, #021447 0%, #052c8f 55%, #0066ff 100%); }
+    .pingo-btn { background: linear-gradient(135deg, #052c8f 0%, #0066ff 100%); }
+    .pingo-btn:hover { background: linear-gradient(135deg, #021b60 0%, #0052cc 100%); }
+    /* Scrollbar tersembunyi untuk menu HP */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col md:flex-row">
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast-box" class="fixed top-5 right-5 z-[100] hidden max-w-sm bg-[#031852] text-white px-4 py-3 rounded-2xl shadow-xl border border-sky-400/30 flex items-center gap-3 text-xs font-medium transition-all">
+    <span id="toast-text">Notifikasi</span>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- LAYAR LOGIN (EMAIL & GOOGLE OAUTH)         -->
+  <!-- ========================================== -->
+  <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-white md:bg-transparent">
+    
+    <!-- Latar Belakang Biru (Hanya Tampil di Layar PC/Tablet) -->
+    <div class="hidden md:block absolute inset-0 pingo-gradient"></div>
+    
+    <!-- Kontainer Card Login (Padding vertikal dikurangi agar lebih rapat) -->
+    <div class="relative z-10 bg-white w-full h-full md:h-auto md:max-h-[95vh] md:max-w-[420px] md:rounded-[2rem] md:shadow-2xl flex flex-col px-6 py-4 md:px-10 md:py-6 border-0 md:border border-sky-100 overflow-y-auto overflow-x-hidden no-scrollbar">
+      
+      <!-- Dekorasi Gelombang Abstrak di Latar Belakang HP -->
+      <div class="absolute top-[-50px] left-[-50px] w-48 h-48 bg-sky-50 rounded-full mix-blend-multiply blur-2xl opacity-60 md:hidden z-0"></div>
+      <div class="absolute top-[-20px] right-[-50px] w-40 h-40 bg-blue-50 rounded-full mix-blend-multiply blur-2xl opacity-60 md:hidden z-0"></div>
+
+      <!-- Konten Form (space-y dikurangi untuk merapatkan jarak antar baris) -->
+      <div class="w-full max-w-sm mx-auto space-y-4 relative z-10 flex-1 flex flex-col justify-center my-auto">
+        
+        <!-- Maskot & Tipografi PINGO (Sedikit diperkecil untuk menghemat ruang vertikal) -->
+        <div class="text-center pt-0">
+          <img src="login.png.png" alt="PINGO Logo" class="w-20 h-20 md:w-24 md:h-24 mx-auto object-contain relative z-10 drop-shadow-md" />
+          <div class="mt-[-12px] md:mt-[-14px] flex flex-col items-center">
+            <img src="tipografi.png" alt="PINGO Text Branding" class="w-36 md:w-40 mx-auto object-contain" />
+          </div>
+        </div>
+
+        <!-- Teks Sambutan -->
+        <div class="text-center space-y-0.5 mt-1">
+          <h2 class="text-[20px] md:text-[22px] font-extrabold text-[#021859] tracking-tight">Selamat datang kembali</h2>
+          <p class="text-[12px] md:text-[13px] text-slate-500 font-medium">Masuk untuk mengelola kartu NFC & QR Anda</p>
+        </div>
+
+        <!-- Form Input dengan Ikon (Padding internal input diubah menjadi py-2.5) -->
+        <div class="space-y-3 pt-0">
+          <div class="relative flex items-center border border-slate-200 rounded-[14px] bg-white focus-within:border-[#0066ff] focus-within:ring-2 focus-within:ring-blue-100 transition-all shadow-sm">
+            <div class="pl-4 pr-3 text-[#052c8f]">
+                <i data-lucide="mail" class="w-5 h-5"></i>
+            </div>
+            <div class="h-6 w-px bg-slate-200"></div>
+            <input type="email" id="auth-email" placeholder="Alamat Email" class="w-full pl-3 pr-4 py-2.5 bg-transparent text-[13px] font-medium outline-none text-slate-700 placeholder:font-normal" />
+          </div>
+          
+          <div class="relative flex items-center border border-slate-200 rounded-[14px] bg-white focus-within:border-[#0066ff] focus-within:ring-2 focus-within:ring-blue-100 transition-all shadow-sm">
+            <div class="pl-4 pr-3 text-[#052c8f]">
+                <i data-lucide="lock" class="w-5 h-5"></i>
+            </div>
+            <div class="h-6 w-px bg-slate-200"></div>
+            <input type="password" id="auth-password" placeholder="Password (min. 6 karakter)" class="w-full pl-3 pr-4 py-2.5 bg-transparent text-[13px] font-medium outline-none text-slate-700 placeholder:font-normal" />
+          </div>
+          
+          <div class="text-right">
+              <a href="#" class="text-[12px] font-semibold text-[#0066ff] hover:underline">Lupa password?</a>
+          </div>
+        </div>
+
+        <!-- Tombol Aksi Utama (Padding diubah menjadi py-3) -->
+        <div class="space-y-2.5">
+          <button type="button" onclick="handleLogin()" class="w-full py-3 pingo-btn text-white font-bold rounded-xl text-sm transition shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 group">
+            Masuk ke Dashboard
+            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          </button>
+          <button type="button" onclick="handleRegister()" class="w-full py-3 bg-[#f0f5ff] hover:bg-[#e6f0ff] text-[#052c8f] font-bold rounded-xl text-sm transition flex items-center justify-center gap-2 border border-blue-100">
+            <i data-lucide="user-plus" class="w-4 h-4"></i>
+            Daftar Akun Klien Baru
+          </button>
+          
+          <!-- Tombol Login Google OAuth (Kini disatukan tanpa pemisah 'atau') -->
+          <button type="button" onclick="handleGoogleLogin()" class="w-full py-3 px-4 bg-white hover:bg-slate-50 text-slate-700 font-bold rounded-[14px] text-sm border border-slate-200 shadow-sm flex items-center justify-center gap-3 transition">
+            <svg class="w-5 h-5" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Lanjutkan dengan Google
+          </button>
+        </div>
+
+        <p id="auth-error" class="text-xs text-center text-rose-600 font-semibold hidden"></p>
+
+        <!-- Footer -->
+        <div class="pt-3 pb-1 flex items-center justify-center gap-3 opacity-60">
+          <div class="h-px w-8 bg-blue-900/20"></div>
+          <span class="text-[9px] font-bold text-[#052c8f] tracking-widest uppercase">Developing By Win</span>
+          <div class="h-px w-8 bg-blue-900/20"></div>
+        </div>
+      </div>
+      
+      <!-- Dekorasi Gelombang Bawah Khusus HP -->
+      <svg class="absolute bottom-0 left-0 w-full h-auto text-blue-50/60 md:hidden z-0 pointer-events-none" viewBox="0 0 1440 250" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0,160L48,165.3C96,171,192,181,288,170.7C384,160,480,128,576,128C672,128,768,160,864,176C960,192,1056,192,1152,181.3C1248,171,1344,149,1392,138.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- BUNGKUSAN UTAMA DASHBOARD                  -->
+  <!-- ========================================== -->
+  <div id="dashboard-screen" class="hidden flex-1 flex flex-col md:flex-row w-full">
+
+    <!-- SIDEBAR NAVIGASI -->
+    <aside class="w-full md:w-64 bg-white border-b md:border-b-0 md:border-r border-sky-100 flex flex-col justify-between shrink-0 sticky top-0 z-40 md:h-screen">
+      <div class="overflow-y-auto no-scrollbar">
+        <!-- Brand Header -->
+        <div class="p-4 md:p-6 border-b border-slate-100 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <!-- Maskot PINGO (Kiri) -->
+            <img src="login.png.png" alt="PINGO Logo" class="w-10 h-10 md:w-11 md:h-11 object-contain drop-shadow-sm shrink-0" />
+            <!-- Tipografi PINGO (Kanan) -->
+            <img src="tipografi.png" alt="PINGO Text Branding" class="w-28 md:w-32 object-contain ml-0.5" />
+          </div>
+          <!-- Tombol Mobile Cepat -->
+          <div class="flex items-center gap-2 md:hidden">
+            <button type="button" onclick="openAddCardModal()" class="px-2.5 py-1.5 pingo-btn text-white rounded-lg text-xs font-bold">
+              + Kartu
+            </button>
+            <button type="button" onclick="handleLogout()" class="px-2.5 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold border border-slate-200">
+              Keluar
+            </button>
+          </div>
+        </div>
+
+        <!-- Menu Navigasi -->
+        <nav class="p-3 md:p-4 flex md:flex-col gap-1.5 overflow-x-auto no-scrollbar text-xs md:text-sm">
+          <button type="button" onclick="switchTab('overview')" id="nav-overview" class="flex items-center justify-between px-3.5 py-2.5 md:px-4 md:py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition nav-active shrink-0">
+            <span class="flex items-center gap-2.5"><i data-lucide="layout-grid" class="w-4 h-4"></i> Overview</span>
+            <i data-lucide="chevron-right" class="w-4 h-4 hidden md:block"></i>
+          </button>
+          <button type="button" onclick="switchTab('media')" id="nav-media" class="flex items-center justify-between px-3.5 py-2.5 md:px-4 md:py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition shrink-0">
+            <span class="flex items-center gap-2.5"><i data-lucide="credit-card" class="w-4 h-4"></i> My Media</span>
+            <i data-lucide="chevron-right" class="w-4 h-4 hidden md:block"></i>
+          </button>
+          <button type="button" onclick="switchTab('analytics')" id="nav-analytics" class="flex items-center justify-between px-3.5 py-2.5 md:px-4 md:py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition shrink-0">
+            <span class="flex items-center gap-2.5"><i data-lucide="bar-chart-2" class="w-4 h-4"></i> Analytics</span>
+            <i data-lucide="chevron-right" class="w-4 h-4 hidden md:block"></i>
+          </button>
+          <button type="button" onclick="switchTab('store')" id="nav-store" class="flex items-center justify-between px-3.5 py-2.5 md:px-4 md:py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition shrink-0">
+            <span class="flex items-center gap-2.5"><i data-lucide="shopping-bag" class="w-4 h-4"></i> Official Store</span>
+            <i data-lucide="chevron-right" class="w-4 h-4 hidden md:block"></i>
+          </button>
+          <button type="button" onclick="switchTab('settings')" id="nav-settings" class="flex items-center justify-between px-3.5 py-2.5 md:px-4 md:py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition shrink-0">
+            <span class="flex items-center gap-2.5"><i data-lucide="settings" class="w-4 h-4"></i> Settings</span>
+            <i data-lucide="chevron-right" class="w-4 h-4 hidden md:block"></i>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Profil Pengguna Bawah Sidebar (Khusus Desktop) -->
+      <div class="p-4 border-t border-slate-100 space-y-3 hidden md:block shrink-0">
+        <div class="flex items-center gap-3">
+          <div id="sidebar-avatar" class="w-9 h-9 rounded-full bg-sky-100 border border-sky-300 flex items-center justify-center font-bold text-[#021859] text-xs shrink-0">
+            PG
+          </div>
+          <div class="overflow-hidden">
+            <p id="user-name-display" class="text-xs font-semibold text-slate-800 truncate">Memuat nama...</p>
+            <p id="user-email-display" class="text-[11px] text-slate-400 truncate">Memuat email...</p>
+          </div>
+        </div>
+        <button type="button" onclick="handleLogout()" class="w-full py-2 px-3 border border-slate-200 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-50 flex items-center justify-center gap-2">
+          <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Sign Out
+        </button>
+      </div>
+    </aside>
+
+    <!-- KONTEN UTAMA -->
+    <main class="flex-1 p-5 md:p-8 overflow-y-auto max-w-6xl mx-auto w-full">
+
+      <!-- Banner Status Database -->
+      <div id="db-status-banner" class="mb-6 px-4 py-2.5 rounded-xl bg-sky-50 border border-sky-200 text-[#021859] text-xs flex flex-wrap items-center justify-between gap-2 shadow-sm">
+        <span id="db-status-text" class="flex items-center gap-2 font-medium"><i data-lucide="check-circle-2" class="w-4 h-4 text-sky-600"></i> Sistem PINGO Aktif — Satu Sentuhan, Langsung Terhubung.</span>
+        <button type="button" onclick="openAddCardModal()" class="hidden md:block px-3.5 py-1.5 pingo-btn text-white rounded-lg font-semibold transition shadow-sm">
+          + Tambah Kartu Baru
+        </button>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- TAB 1: OVERVIEW                            -->
+      <!-- ========================================== -->
+      <section id="tab-overview" class="space-y-8">
+        <div>
+          <h1 class="text-2xl font-extrabold text-[#021859]">Halo, <span id="ov-greeting-name">Mas</span> 👋</h1>
+          <p class="text-sm text-slate-500 mt-1">Kelola kartu pintar PINGO NFC & QR digitalmu secara terpusat dari sini.</p>
+        </div>
+
+        <!-- 3 Kartu Ringkasan -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+            <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
+              <i data-lucide="wifi" class="w-5 h-5"></i>
+            </div>
+            <p id="ov-total-taps" class="text-2xl font-extrabold text-slate-900">0</p>
+            <p class="text-xs text-slate-500 mt-1">Total Interaksi</p>
+          </div>
+          <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+            <div class="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center mb-4">
+              <i data-lucide="check-circle" class="w-5 h-5"></i>
+            </div>
+            <p id="ov-active-media" class="text-2xl font-extrabold text-slate-900">0</p>
+            <p class="text-xs text-slate-500 mt-1">Kartu Berstatus Aktif</p>
+          </div>
+          <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+            <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4">
+              <i data-lucide="credit-card" class="w-5 h-5"></i>
+            </div>
+            <p id="ov-total-media" class="text-2xl font-extrabold text-slate-900">0</p>
+            <p class="text-xs text-slate-500 mt-1">Total Media</p>
+          </div>
+        </div>
+
+        <!-- Media Aktif -->
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-base font-bold text-slate-900">Media Aktif</h2>
+            <button type="button" onclick="switchTab('media')" class="text-xs font-semibold text-blue-600 hover:underline">Kelola semua →</button>
+          </div>
+          <div id="ov-active-cards" class="grid grid-cols-1 md:grid-cols-3 gap-5"></div>
+        </div>
+
+        <!-- Aksi Cepat -->
+        <div>
+          <h2 class="text-base font-bold text-slate-900 mb-4">Aksi Cepat</h2>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <button type="button" onclick="switchTab('media')" class="bg-blue-50/50 hover:bg-blue-50 border border-blue-100 p-5 rounded-2xl flex flex-col items-center gap-2 transition">
+              <i data-lucide="credit-card" class="w-5 h-5 text-blue-600"></i>
+              <span class="text-xs font-semibold text-slate-800">Edit Profil Kartu</span>
+            </button>
+            <button type="button" onclick="switchTab('analytics')" class="bg-purple-50/50 hover:bg-purple-50 border border-purple-100 p-5 rounded-2xl flex flex-col items-center gap-2 transition">
+              <i data-lucide="bar-chart-2" class="w-5 h-5 text-purple-600"></i>
+              <span class="text-xs font-semibold text-slate-800">Lihat Analytics</span>
+            </button>
+            <button type="button" onclick="switchTab('store')" class="bg-amber-50/50 hover:bg-amber-50 border border-amber-100 p-5 rounded-2xl flex flex-col items-center gap-2 transition">
+              <i data-lucide="shopping-bag" class="w-5 h-5 text-amber-600"></i>
+              <span class="text-xs font-semibold text-slate-800">Official Store</span>
+            </button>
+            <button type="button" onclick="switchTab('settings')" class="bg-slate-100/70 hover:bg-slate-100 border border-slate-200 p-5 rounded-2xl flex flex-col items-center gap-2 transition">
+              <i data-lucide="settings" class="w-5 h-5 text-slate-600"></i>
+              <span class="text-xs font-semibold text-slate-800">Pengaturan</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB 2: MY MEDIA                            -->
+      <!-- ========================================== -->
+      <section id="tab-media" class="hidden space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h1 class="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
+              <i data-lucide="credit-card" class="w-6 h-6 text-blue-600"></i> Media & Kartu Saya
+            </h1>
+            <p class="text-sm text-slate-500 mt-1">Kelola kartu, konversi link Google Review, dan QR Code.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            <button type="button" onclick="openAddCardModal()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm">
+              <i data-lucide="plus" class="w-4 h-4"></i> Tambah
+            </button>
+            <button type="button" id="btn-transfer-card" onclick="openTransferModal()" class="hidden flex-1 sm:flex-none px-4 py-2.5 rounded-full bg-sky-500 hover:bg-sky-600 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm">
+              <i data-lucide="send" class="w-3.5 h-3.5"></i> Transfer
+            </button>
+            <button type="button" onclick="openQrModal()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm">
+              <i data-lucide="qr-code" class="w-3.5 h-3.5"></i> QR & NFC
+            </button>
+          </div>
+        </div>
+
+        <!-- Bar Metrik Atas -->
+        <div class="grid grid-cols-2 md:grid-cols-4 bg-white rounded-2xl border border-slate-100 shadow-sm divide-x divide-slate-100">
+          <div class="p-4 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center"><i data-lucide="layers" class="w-4 h-4"></i></div>
+            <div>
+              <p class="text-[10px] font-bold uppercase text-slate-400">Total Media</p>
+              <p id="mm-total-media" class="text-base font-extrabold text-slate-900">0</p>
+            </div>
+          </div>
+          <div class="p-4 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center"><i data-lucide="zap" class="w-4 h-4"></i></div>
+            <div>
+              <p class="text-[10px] font-bold uppercase text-slate-400">Total Interaksi</p>
+              <p class="text-base font-extrabold text-slate-900"><span id="mm-total-taps">0</span> <span class="text-xs font-normal text-slate-400">taps</span></p>
+            </div>
+          </div>
+          <div class="p-4 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center"><i data-lucide="check-circle-2" class="w-4 h-4"></i></div>
+            <div>
+              <p class="text-[10px] font-bold uppercase text-slate-400">Status Aktif</p>
+              <p id="mm-active-count" class="text-base font-extrabold text-slate-900">0</p>
+            </div>
+          </div>
+          <div class="p-4 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center"><i data-lucide="star" class="w-4 h-4"></i></div>
+            <div class="overflow-hidden">
+              <p class="text-[10px] font-bold uppercase text-slate-400">Kartu Dipilih</p>
+              <p id="mm-selected-label" class="text-xs font-extrabold text-slate-900 truncate">-</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Layout 2 Kolom -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <!-- Kolom Kiri -->
+          <div class="lg:col-span-5 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-800 flex items-center gap-2">
+                <i data-lucide="layers" class="w-4 h-4 text-blue-600"></i> Inventori Kartu
+                <span id="mm-badge-count" class="px-2 py-0.5 text-[11px] rounded-full bg-slate-100 text-slate-600">0</span>
+              </span>
+            </div>
+            <input type="text" id="search-media" oninput="renderAll()" placeholder="Cari nama kafe, kode kartu, atau email..." class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500" />
+            <div id="mm-card-list" class="space-y-2.5 max-h-[440px] overflow-y-auto pr-1"></div>
+          </div>
+
+          <!-- Kolom Kanan -->
+          <div class="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+            <!-- Empty State -->
+            <div id="cfg-empty-state" class="py-16 text-center space-y-3">
+              <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto text-xl">💳</div>
+              <p class="text-sm font-bold text-slate-700">Belum Ada Kartu NFC yang Dipilih</p>
+              <p class="text-xs text-slate-400 max-w-xs mx-auto">Klik tombol <b>+ Tambah Kartu</b> di atas untuk mendaftarkan kartu NFC kosong pertamamu.</p>
+            </div>
+
+            <!-- Form Konfigurasi Kartu -->
+            <div id="cfg-form-container" class="hidden space-y-6">
+              <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center"><i data-lucide="credit-card" class="w-3.5 h-3.5"></i></div>
+                  <span id="cfg-header-name" class="text-xs font-bold text-slate-900">-</span>
+                  <span id="cfg-header-code" class="text-[11px] font-mono px-2 py-0.5 bg-slate-100 rounded text-slate-600">-</span>
+                </div>
+                <div class="flex items-center gap-4">
+                  <button type="button" onclick="openQrModal()" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition">
+                    <i data-lucide="qr-code" class="w-3.5 h-3.5"></i> Lihat QR
+                  </button>
+                  <a id="cfg-preview-link" href="#" target="_blank" class="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1 transition">
+                    <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Tes Tap Kartu
+                  </a>
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-[11px] font-medium text-slate-500 mb-1.5">Nama Kafe / Label Kartu</label>
+                  <input type="text" id="cfg-label-input" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium focus:outline-none focus:border-blue-500" />
+                </div>
+
+                <div>
+                  <label class="block text-[11px] font-medium text-slate-500 mb-2">Modus Respons Tap NFC / Scan QR</label>
+                  <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    <button type="button" onclick="selectMode('multi_link')" id="mode-multi_link" class="p-3 rounded-xl border border-slate-200 text-center hover:bg-slate-50 transition">
+                      <p class="text-xs font-bold text-slate-800">🌐 Multi Link</p>
+                      <p class="text-[10px] text-slate-400 mt-0.5">Menu & Sosmed</p>
+                    </button>
+                    <button type="button" onclick="selectMode('direct_url')" id="mode-direct_url" class="p-3 rounded-xl border border-slate-200 text-center hover:bg-slate-50 transition">
+                      <p class="text-xs font-bold text-slate-800">↗ Direct URL</p>
+                      <p class="text-[10px] text-slate-400 mt-0.5">WA / Instagram</p>
+                    </button>
+                    <button type="button" onclick="selectMode('review')" id="mode-review" class="p-3 rounded-xl border border-slate-200 text-center hover:bg-slate-50 transition mode-active">
+                      <p class="text-xs font-bold text-amber-600">★ Review</p>
+                      <p class="text-[10px] text-slate-500 mt-0.5">Google Review</p>
+                    </button>
+                    <button type="button" onclick="selectMode('emergency')" id="mode-emergency" class="p-3 rounded-xl border border-slate-200 text-center hover:bg-slate-50 transition">
+                      <p class="text-xs font-bold text-rose-600">ℹ️ Info / WiFi</p>
+                      <p class="text-[10px] text-slate-400 mt-0.5">Data Teks / WiFi</p>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Box Target URL + Mesin Konversi Otomatis Link Review -->
+                <div class="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-2.5">
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <label id="cfg-target-label" class="text-xs font-bold text-slate-800">Target URL Google Maps / Review</label>
+                    <div class="flex items-center gap-2">
+                      <button type="button" id="btn-auto-convert" onclick="handleSmartConvertClick()" class="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold shadow-sm transition flex items-center gap-1">
+                        ✨ Konversi Ulang
+                      </button>
+                      <button type="button" onclick="openHelpModal()" class="text-[11px] font-semibold text-amber-800 hover:underline">
+                        ❓ Panduan
+                      </button>
+                    </div>
+                  </div>
+
+                  <input type="text" id="cfg-url-input" oninput="inspectUrlStatus()" placeholder="Tempel tautan Bagikan biasa dari Google Maps (https://maps.app.goo.gl/...) di sini..." class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-amber-300 text-xs focus:outline-none focus:border-amber-500" />
+
+                  <p id="cfg-target-helper" class="text-[11px] text-amber-800 leading-relaxed">
+                    💡 <b>Paling Praktis!</b> Cukup salin tautan bagikan biasa dari Google Maps (<code class="bg-amber-100 px-1 rounded">https://maps.app.goo.gl/...</code>), sistem akan otomatis mengonversinya menjadi URL ulasan resmi.
+                  </p>
+                </div>
+
+                <!-- Info Link Chip NFC -->
+                <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-2">
+                  <div class="overflow-hidden">
+                    <p class="text-[10px] font-semibold text-slate-400 uppercase">Link Chip NFC & QR Code (Tulis ke NFC Tools):</p>
+                    <p id="cfg-nfc-url" class="text-xs font-mono text-blue-600 truncate"></p>
+                  </div>
+                  <button type="button" onclick="copyRedirectLink()" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-semibold hover:bg-slate-100 shrink-0 shadow-sm">
+                    Salin Link
+                  </button>
+                </div>
+
+                <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <button type="button" onclick="deleteSelectedCard()" class="w-full sm:w-auto px-3.5 py-2.5 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-semibold transition">
+                    Hapus Kartu
+                  </button>
+                  <button type="button" id="btn-save-config" onclick="saveCardConfig()" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm transition">
+                    Simpan Perubahan
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB 3: ANALYTICS                           -->
+      <!-- ========================================== -->
+      <section id="tab-analytics" class="hidden space-y-6">
+        <div>
+          <h1 class="text-2xl font-extrabold text-slate-900">Analytics</h1>
+          <p class="text-sm text-slate-500 mt-1">Pantau performa ketukan (tap) kartu NFC & scan QR secara real-time.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+            <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-3"><i data-lucide="activity" class="w-5 h-5"></i></div>
+            <p id="an-total-taps" class="text-2xl font-extrabold text-slate-900">0</p>
+            <p class="text-xs font-bold text-slate-800 mt-1">Total Interaksi</p>
+            <p class="text-[11px] text-slate-400">Akumulasi Tap NFC & Scan QR</p>
+          </div>
+          <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+            <div class="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center mb-3"><i data-lucide="award" class="w-5 h-5"></i></div>
+            <p id="an-top-card" class="text-lg font-extrabold text-slate-900 truncate">-</p>
+            <p class="text-xs font-bold text-slate-800 mt-1">Kartu Paling Aktif</p>
+            <p class="text-[11px] text-slate-400">Interaksi tertinggi saat ini</p>
+          </div>
+          <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+            <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3"><i data-lucide="wifi" class="w-5 h-5"></i></div>
+            <p id="an-total-media" class="text-2xl font-extrabold text-slate-900">0</p>
+            <p class="text-xs font-bold text-slate-800 mt-1">Total Media</p>
+            <p class="text-[11px] text-slate-400">Kartu & standee terdaftar</p>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2"><i data-lucide="trending-up" class="w-4 h-4 text-blue-600"></i> Grafik Perbandingan Interaksi per Kartu</h3>
+            <span class="text-xs text-slate-400">Real-time Database</span>
+          </div>
+          <div id="an-bars" class="space-y-3"></div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB 4: OFFICIAL STORE                      -->
+      <!-- ========================================== -->
+      <section id="tab-store" class="hidden space-y-6">
+        <div>
+          <h1 class="text-2xl font-extrabold text-[#021859]">Official Store — PINGO</h1>
+          <p class="text-sm text-slate-500 mt-1">Pesan kartu pintar PINGO NFC & Stand Akrilik tambahan untuk cabang atau meja kasirmu.</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
+            <div>
+              <span class="px-2.5 py-1 text-[10px] font-bold uppercase bg-sky-50 text-sky-600 rounded-full">Best Seller UMKM</span>
+              <h3 class="text-lg font-extrabold text-[#021859] mt-3">Paket 1 Unit Stand Kartu PINGO NFC + QR</h3>
+              <p class="text-xs text-slate-500 mt-1">Termasuk Kartu Pintar PVC, Stand Dudukan Akrilik, dan Gratis Aktivasi Sistem Selamanya.</p>
+              <div class="mt-4 flex items-baseline gap-2">
+                <span class="text-xs text-slate-400 line-through">Rp 85.000</span>
+                <span class="text-2xl font-extrabold text-[#0066ff]">Rp 65.000</span>
+              </div>
+            </div>
+            <!-- Ganti 6281234567890 dengan nomor WA kamu -->
+            <a href="https://wa.me/6281234567890?text=Halo%20PINGO,%20saya%20mau%20pesan%201%20unit%20Kartu%20NFC%20Google%20Review" target="_blank" class="mt-6 w-full py-2.5 pingo-btn text-white text-xs font-bold rounded-xl text-center">Pesan via WhatsApp</a>
+          </div>
+          <div class="bg-white p-6 rounded-2xl border-2 border-[#ff9900] shadow-sm flex flex-col justify-between">
+            <div>
+              <span class="px-2.5 py-1 text-[10px] font-bold uppercase bg-amber-100 text-amber-800 rounded-full">Paket Hemat 2 Titik</span>
+              <h3 class="text-lg font-extrabold text-[#021859] mt-3">Bundling 2 Unit Stand Kartu PINGO NFC + QR</h3>
+              <p class="text-xs text-slate-500 mt-1">Ideal untuk dipasang di Meja Kasir dan Meja Bar / Ruang Tunggu Pelanggan.</p>
+              <div class="mt-4 flex items-baseline gap-2">
+                <span class="text-xs text-slate-400 line-through">Rp 170.000</span>
+                <span class="text-2xl font-extrabold text-[#ff9900]">Rp 120.000</span>
+              </div>
+            </div>
+            <!-- Ganti 6281234567890 dengan nomor WA kamu -->
+            <a href="https://wa.me/6281234567890?text=Halo%20PINGO,%20saya%20mau%20pesan%20Paket%20Bundling%202%20Pcs%20Kartu%20NFC" target="_blank" class="mt-6 w-full py-2.5 bg-[#ff9900] hover:bg-amber-600 text-white text-xs font-bold rounded-xl text-center">Ambil Paket 2 Pcs</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB 5: SETTINGS                            -->
+      <!-- ========================================== -->
+      <section id="tab-settings" class="hidden space-y-6">
+        <div>
+          <h1 class="text-2xl font-extrabold text-[#021859]">Settings</h1>
+          <p class="text-sm text-slate-500 mt-1">Kelola profil akun, keamanan kartu (Suspend), dan inventori media.</p>
+        </div>
+
+        <!-- Profil Akun -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+          <h2 class="text-xs font-bold text-slate-800 flex items-center gap-2">
+            <i data-lucide="shield" class="w-4 h-4 text-blue-600"></i> Profil Akun
+          </h2>
+          <div class="flex items-center gap-4">
+            <div id="settings-avatar" class="w-14 h-14 rounded-full bg-sky-100 border-2 border-sky-300 flex items-center justify-center font-extrabold text-[#021859] text-lg">
+              PG
+            </div>
+            <div>
+              <p id="settings-name" class="text-base font-extrabold text-slate-900">Memuat nama...</p>
+              <p id="settings-email" class="text-xs text-slate-500">Memuat email...</p>
+              <div class="flex items-center gap-2 mt-1.5">
+                <span id="role-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border">Role</span>
+                <span class="text-[11px] text-slate-400">Supabase Auth</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inventori & Keamanan Media -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+          <div>
+            <h2 class="text-xs font-bold text-slate-800 flex items-center gap-2">
+              <i data-lucide="wifi" class="w-4 h-4 text-blue-600"></i> Inventori & Keamanan Media
+              <span id="st-badge-count" class="px-2 py-0.5 text-[11px] rounded-full bg-slate-100 text-slate-600">0</span>
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">Kunci sementara (Suspend) atau aktifkan kembali kartu dari jarak jauh.</p>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-3">
+            <input type="text" id="search-settings" oninput="renderAll()" placeholder="Cari nama atau kode kartu..." class="flex-1 px-4 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500" />
+            <select id="filter-status" onchange="renderAll()" class="px-4 py-2 text-xs rounded-xl border border-slate-200 bg-white">
+              <option value="ALL">Semua Status</option>
+              <option value="ACTIVE">Aktif</option>
+              <option value="SUSPENDED">Terkunci / Suspend</option>
+            </select>
+          </div>
+
+          <div id="st-card-list" class="space-y-3"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL TAMBAH KARTU BARU                    -->
+  <!-- ========================================== -->
+  <div id="modal-add-card" class="fixed inset-0 z-50 hidden bg-slate-900/60 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-extrabold text-slate-900">Tambah Kartu NFC Baru</h3>
+        <button type="button" onclick="closeAddCardModal()" class="text-slate-400 hover:text-slate-600">✕</button>
+      </div>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Kode Unik Kartu (ID Chip)</label>
+          <input type="text" id="new-card-code" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono uppercase" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Kafe / Label Kartu</label>
+          <input type="text" id="new-card-name" placeholder="Contoh: Kopi Senja Kasir 1" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs" />
+        </div>
+        <div id="new-card-owner-wrap" class="hidden">
+          <label class="block text-xs font-semibold text-indigo-700 mb-1">Email Pemilik Kartu (Khusus Admin)</label>
+          <input type="email" id="new-card-owner" placeholder="Kosongkan jika untuk stok sendiri" class="w-full px-3.5 py-2.5 rounded-xl border border-indigo-200 bg-indigo-50/40 text-xs" />
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" onclick="closeAddCardModal()" class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600">Batal</button>
+        <button type="button" onclick="submitNewCard()" class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold">Simpan & Aktifkan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL TRANSFER KARTU KE KLIEN              -->
+  <!-- ========================================== -->
+  <div id="modal-transfer" class="fixed inset-0 z-50 hidden bg-slate-900/60 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-extrabold text-slate-900">Transfer Kepemilikan Kartu</h3>
+        <button type="button" onclick="closeTransferModal()" class="text-slate-400 hover:text-slate-600">✕</button>
+      </div>
+      <p class="text-xs text-slate-500">Masukkan alamat email klien kafe yang akan mengelola kartu <b id="transfer-card-name" class="text-slate-800"></b>:</p>
+      <input type="email" id="transfer-email-input" placeholder="contoh: kopisenja@gmail.com" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs" />
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" onclick="closeTransferModal()" class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600">Batal</button>
+        <button type="button" onclick="submitTransferCard()" class="px-5 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold">Transfer Sekarang</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL QR CODE & LINK NFC                   -->
+  <!-- ========================================== -->
+  <div id="modal-qr" class="fixed inset-0 z-50 hidden bg-slate-900/60 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl text-center space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 id="qr-modal-title" class="text-sm font-extrabold text-slate-900">QR Code & Link NFC</h3>
+        <button type="button" onclick="closeQrModal()" class="text-slate-400 hover:text-slate-600">✕</button>
+      </div>
+      <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 inline-block mx-auto">
+        <img id="qr-image" src="" alt="QR Code Kartu" class="w-44 h-44 mx-auto rounded-lg" />
+      </div>
+      <p class="text-[11px] text-slate-500">Cetak QR Code ini pada desain kartu atau salin URL di bawah ke aplikasi <b>NFC Tools</b>:</p>
+      <input type="text" id="qr-url-box" readonly class="w-full px-3 py-2 rounded-xl bg-slate-100 text-[11px] font-mono text-center text-blue-700" />
+      <div class="flex gap-2">
+        <button type="button" onclick="copyRedirectLink()" class="flex-1 py-2.5 rounded-xl pingo-btn text-white text-xs font-bold">Salin Link NFC</button>
+        <a id="qr-download-btn" href="#" target="_blank" download="QR-PINGO.png" class="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">Buka Gambar QR</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL PANDUAN CARA AMBIL LINK MAPS         -->
+  <!-- ========================================== -->
+  <div id="modal-help" class="fixed inset-0 z-50 hidden bg-slate-900/60 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-extrabold text-slate-900">Cara Memasukkan Link Google Maps</h3>
+        <button type="button" onclick="closeHelpModal()" class="text-slate-400 hover:text-slate-600">✕</button>
+      </div>
+      <div class="text-xs text-slate-600 space-y-3 leading-relaxed">
+        <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900">
+          <b>Cara 1 (Paling Mudah — Pakai Link Maps Biasa):</b>
+          <ol class="list-decimal pl-4 mt-1 space-y-1">
+            <li>Buka Google Maps di browser (Chrome/Safari) lalu cari nama kafe/toko Anda.</li>
+            <li>Salin alamat link panjang di bagian atas browser (contoh: <code class="bg-white px-1 rounded">google.com/maps/place/...</code>) atau link Share (<code class="bg-white px-1 rounded">maps.app.goo.gl/...</code>).</li>
+            <li>Tempelkan ke kotak URL di web ini lalu tunggu — sistem <b>otomatis mengonversinya</b> menjadi link ulasan (atau klik <b>"✨ Konversi Ulang"</b>).</li>
+          </ol>
+        </div>
+        <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900">
+          <b>Cara 2 (Lewat Google Business Profile):</b>
+          <ol class="list-decimal pl-4 mt-1 space-y-1">
+            <li>Cari nama usaha Anda di Google lalu klik menu <b>Minta Ulasan (Ask for reviews)</b>.</li>
+            <li>Salin link pendek <code class="bg-white px-1 rounded">https://g.page/r/.../review</code> dan tempelkan ke kotak URL.</li>
+          </ol>
+        </div>
+      </div>
+      <div class="flex justify-end">
+        <button type="button" onclick="closeHelpModal()" class="px-5 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold">Mengerti</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT LOGIKA APLIKASI & KONVERSI OTOMATIS GOOGLE REVIEW -->
+  <script>
+    const SUPABASE_URL = "https://dposmaipgqgbqvhveifa.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwb3NtYWlwZ3FnYnF2aHZlaWZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1NzQxNzAsImV4cCI6MjEwODE1MDE3MH0.za8FIv0H4q57x4ZhGcUalJbRKrZUSl9tae5q0lN2A6g";
+    const SUPER_ADMIN_EMAIL = "arwinfaliyanto2@gmail.com";
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let currentUser = null;
+    let cards = [];
+    let selectedCode = null;
+    let selectedMode = "review";
+
+    let toastTimer = null;
+    function showToast(msg) {
+      const box = document.getElementById("toast-box");
+      document.getElementById("toast-text").innerText = msg;
+      box.classList.remove("hidden");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => box.classList.add("hidden"), 3500);
+    }
+
+    // Escape HTML (Keamanan XSS)
+    function esc(v) {
+      return String(v == null ? "" : v).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+    }
+
+    // Fetch dengan perlindungan Timeout
+    async function fetchT(url, ms = 8000) {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), ms);
+      try { 
+        const res = await fetch(url, { signal: ctrl.signal });
+        clearTimeout(t);
+        return res;
+      } catch (e) {
+        clearTimeout(t);
+        throw e;
+      }
+    }
+
+    // =========================================================================
+    // MESIN KONVERSI LINK GOOGLE MAPS -> LINK ULASAN
+    // =========================================================================
+
+    let autoConvertTimer = null;
+
+    function featureIdToPlaceId(hex1, hex2) {
+      try {
+        const h1 = hex1.replace(/^0x/i, "").padStart(16, "0");
+        const h2 = hex2.replace(/^0x/i, "").padStart(16, "0");
+        const bytes = new Uint8Array(20);
+        bytes[0] = 0x0a; bytes[1] = 0x12; bytes[2] = 0x09;
+        for (let i = 0; i < 8; i++) bytes[3 + i] = parseInt(h1.slice((7 - i) * 2, (7 - i) * 2 + 2), 16);
+        bytes[11] = 0x11;
+        for (let i = 0; i < 8; i++) bytes[12 + i] = parseInt(h2.slice((7 - i) * 2, (7 - i) * 2 + 2), 16);
+        let bin = "";
+        for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+        return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+      } catch (e) { return null; }
+    }
+
+    function safeDecodeText(raw) {
+      if (!raw) return "";
+      let str = String(raw)
+        .replace(/\\u003a/gi, ":")
+        .replace(/\\x3a/gi, ":")
+        .replace(/\\u0026/gi, "&")
+        .replace(/\\u003d/gi, "=")
+        .replace(/\\+/g, "");
+      for (let i = 0; i < 3; i++) {
+        str = str.replace(/%(?:25)*([0-9a-fA-F]{2})/g, (match, hex) => {
+          try { return decodeURIComponent("%" + hex); } catch (e) { return match; }
+        });
+      }
+      return str;
+    }
+
+    function extractDirectReviewUrl(rawText) {
+      if (!rawText) return null;
+      const cleaned = safeDecodeText(rawText.trim());
+
+      const existingWriteReview = cleaned.match(/https?:\/\/search\.google\.com\/local\/writereview\?placeid=([A-Za-z0-9_-]{20,35})/i);
+      if (existingWriteReview) return `https://search.google.com/local/writereview?placeid=${existingWriteReview[1]}`;
+
+      const gpageMatch = cleaned.match(/(https?:\/\/(?:www\.)?g\.page\/r\/[A-Za-z0-9_-]+)/i);
+      if (gpageMatch) return gpageMatch[1].replace(/\/+$/, "") + "/review";
+
+      const fidMatch = cleaned.match(/(0x[0-9a-fA-F]{10,16})\s*(?::|%3A)\s*(0x[0-9a-fA-F]{10,16})/i);
+      if (fidMatch) {
+        const placeId = featureIdToPlaceId(fidMatch[1], fidMatch[2]);
+        if (placeId) return `https://search.google.com/local/writereview?placeid=${placeId}`;
+      }
+
+      const explicitPlaceId = cleaned.match(/(?:!19s|query_place_id=|place_id=|placeid=)(ChIJ[A-Za-z0-9_-]{23})(?:[^A-Za-z0-9_-]|$)/);
+      if (explicitPlaceId) return `https://search.google.com/local/writereview?placeid=${explicitPlaceId[1]}`;
+
+      const barePid = cleaned.match(/(?:^|[^A-Za-z0-9_-])(ChIJ[A-Za-z0-9_-]{23})(?![A-Za-z0-9_-])/);
+      if (barePid) return `https://search.google.com/local/writereview?placeid=${barePid[1]}`;
+
+      return null;
+    }
+
+    function extractCleanUrlFromText(inputStr) {
+      if (!inputStr) return "";
+      const urlMatch = inputStr.match(/https?:\/\/[^\s"'<>]+/i);
+      return urlMatch ? urlMatch[0].trim() : inputStr.trim();
+    }
+
+    async function resolveShortMapsUrl(rawInput) {
+      const shortUrl = extractCleanUrlFromText(rawInput);
+      if (!shortUrl) return null;
+
+      try {
+        const res = await fetchT(`https://api.allorigins.win/get?url=${encodeURIComponent(shortUrl)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.status && data.status.url) {
+            const fromRedirectUrl = extractDirectReviewUrl(data.status.url);
+            if (fromRedirectUrl) return fromRedirectUrl;
+          }
+          if (data && data.contents) {
+            const fromContents = extractDirectReviewUrl(data.contents);
+            if (fromContents) return fromContents;
+            const nestedMapsUrl = safeDecodeText(data.contents).match(/https?:\/\/(?:www\.)?google\.[a-z.]+\/maps\/[^\s"'<>\\]+/i);
+            if (nestedMapsUrl) {
+              const fromNested = extractDirectReviewUrl(nestedMapsUrl[0]);
+              if (fromNested) return fromNested;
+            }
+          }
+        }
+      } catch (e) {}
+
+      try {
+        const res2 = await fetchT(`https://unshorten.me/json/${encodeURIComponent(shortUrl)}`);
+        if (res2.ok) {
+          const data2 = await res2.json();
+          if (data2 && data2.resolved_url) {
+            const fromUnshorten = extractDirectReviewUrl(data2.resolved_url);
+            if (fromUnshorten) return fromUnshorten;
+          }
+        }
+      } catch (e) {}
+
+      const backupProxies = [
+        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(shortUrl)}`,
+        `https://corsproxy.io/?url=${encodeURIComponent(shortUrl)}`
+      ];
+
+      for (const proxyUrl of backupProxies) {
+        try {
+          const res3 = await fetchT(proxyUrl);
+          if (!res3.ok) continue;
+          const text = await res3.text();
+          const converted = extractDirectReviewUrl(text);
+          if (converted) return converted;
+        } catch (err) {}
+      }
+
+      return null;
+    }
+
+    function inspectUrlStatus() {
+      clearTimeout(autoConvertTimer);
+      if (selectedMode !== "review") return;
+      const inputEl = document.getElementById("cfg-url-input");
+      const helperEl = document.getElementById("cfg-target-helper");
+      const raw = (inputEl.value || "").trim();
+
+      if (!raw) {
+        helperEl.className = "text-[11px] text-amber-800 leading-relaxed";
+        helperEl.innerHTML = `💡 <b>Paling Praktis!</b> Cukup salin tautan bagikan biasa dari Google Maps (<code class="bg-amber-100 px-1 rounded">https://maps.app.goo.gl/...</code>), sistem otomatis mengonversinya.`;
+        return;
+      }
+
+      const direct = extractDirectReviewUrl(raw);
+      if (direct) {
+        if (direct !== raw) {
+          inputEl.value = direct;
+          showToast("✨ Tautan Google Maps otomatis dikonversi ke URL Ulasan Resmi!");
+        }
+        helperEl.className = "text-[11px] text-emerald-700 font-semibold leading-relaxed";
+        helperEl.innerHTML = `✅ <b>URL Ulasan Resmi Aktif!</b> Saat kartu di-tap, HP pelanggan akan langsung memunculkan pop-up Bintang 5 Google.`;
+        return;
+      }
+
+      if (/maps\.app\.goo\.gl|goo\.gl\/maps|share\.google|g\.co\/kgs/i.test(raw)) {
+        const cleanShort = extractCleanUrlFromText(raw);
+        if (cleanShort !== raw) inputEl.value = cleanShort;
+
+        helperEl.className = "text-[11px] text-blue-700 font-semibold leading-relaxed";
+        helperEl.innerHTML = `⏳ <b>Sedang mengonversi otomatis...</b> Membongkar tautan pendek Google Maps...`;
+
+        clearTimeout(autoConvertTimer);
+        autoConvertTimer = setTimeout(async () => {
+          const resolved = await resolveShortMapsUrl(cleanShort);
+          if (selectedMode !== "review" || inputEl.value.trim() !== cleanShort) return;
+          if (resolved && resolved !== cleanShort) {
+            inputEl.value = resolved;
+            helperEl.className = "text-[11px] text-emerald-700 font-semibold leading-relaxed";
+            helperEl.innerHTML = `✅ <b>Berhasil Dikonversi!</b> Tautan pendek berhasil diubah menjadi URL Ulasan Resmi. Klik <b>Simpan Perubahan</b>.`;
+            showToast("✨ Tautan berhasil diekstrak dan dikonversi!");
+          } else {
+            helperEl.className = "text-[11px] text-rose-600 font-semibold leading-relaxed";
+            helperEl.innerHTML = `⚠️ <b>Gagal mengonversi otomatis.</b> Link tetap disimpan, sistem akan membongkarnya saat kartu disentuh pelanggan.`;
+          }
+        }, 1000);
+        return;
+      }
+
+      helperEl.className = "text-[11px] text-slate-500 leading-relaxed";
+      helperEl.innerHTML = `Format tautan standar terdeteksi. Sistem akan mencoba membacanya saat kartu di-tap.`;
+    }
+
+    function handleSmartConvertClick() {
+      inspectUrlStatus();
+    }
+
+    // =========================================================================
+    // FUNGSI UMUM DASHBOARD & SUPABASE
+    // =========================================================================
+
+    async function loadCards() {
+      if (!currentUser) return;
+      const isAdmin = currentUser.email === SUPER_ADMIN_EMAIL;
+
+      let query = supabaseClient.from("cards").select("*").order("id", { ascending: true });
+      if (!isAdmin) query = query.eq("owner_email", String(currentUser.email).toLowerCase());
+
+      const { data, error } = await query;
+      if (error) showToast("❌ Gagal memuat kartu: " + error.message);
+
+      cards = data || [];
+      if (cards.length > 0) {
+        if (!cards.find(c => c.card_code === selectedCode)) {
+          selectedCode = cards[0].card_code;
+        }
+        document.getElementById("cfg-empty-state").classList.add("hidden");
+        document.getElementById("cfg-form-container").classList.remove("hidden");
+        selectCard(selectedCode);
+      } else {
+        selectedCode = null;
+        document.getElementById("mm-selected-label").innerText = "-";
+        document.getElementById("cfg-empty-state").classList.remove("hidden");
+        document.getElementById("cfg-form-container").classList.add("hidden");
+      }
+      renderAll();
+    }
+
+    function switchTab(tabName) {
+      ["overview", "media", "analytics", "store", "settings"].forEach(t => {
+        document.getElementById(`tab-${t}`).classList.add("hidden");
+        document.getElementById(`nav-${t}`).classList.remove("nav-active");
+      });
+      document.getElementById(`tab-${tabName}`).classList.remove("hidden");
+      document.getElementById(`nav-${tabName}`).classList.add("nav-active");
+      renderAll();
+    }
+
+    function selectCard(code) {
+      selectedCode = code;
+      const card = cards.find(c => c.card_code === code);
+      if (!card) return;
+
+      document.getElementById("mm-selected-label").innerText = card.label_name;
+      document.getElementById("cfg-header-name").innerText = card.label_name;
+      document.getElementById("cfg-header-code").innerText = card.card_code;
+      document.getElementById("cfg-label-input").value = card.label_name;
+      document.getElementById("cfg-url-input").value = card.target_url || "";
+
+      const redirectUrl = new URL("c.html?id=" + encodeURIComponent(card.card_code), window.location.href).href;
+      document.getElementById("cfg-nfc-url").innerText = redirectUrl;
+      document.getElementById("cfg-preview-link").href = redirectUrl;
+
+      selectMode(card.response_mode || "review");
+      inspectUrlStatus();
+      renderAll();
+    }
+
+    function selectMode(mode) {
+      clearTimeout(autoConvertTimer);
+      selectedMode = mode;
+      ["multi_link", "direct_url", "review", "emergency"].forEach(m => {
+        const btn = document.getElementById(`mode-${m}`);
+        if (btn) btn.classList.remove("mode-active");
+      });
+      const activeBtn = document.getElementById(`mode-${mode}`);
+      if (activeBtn) activeBtn.classList.add("mode-active");
+
+      const label = document.getElementById("cfg-target-label");
+      const helper = document.getElementById("cfg-target-helper");
+      const autoBtn = document.getElementById("btn-auto-convert");
+      
+      if (mode === "review") {
+        label.innerText = "Target URL Google Maps / Review";
+        autoBtn.classList.remove("hidden");
+        inspectUrlStatus();
+      } else if (mode === "multi_link") {
+        label.innerText = "Data Tombol Linktree (Nama Tombol | Link)";
+        helper.className = "text-[11px] text-slate-500 leading-relaxed";
+        helper.innerHTML = `Format: <code class="bg-slate-100 px-1">Menu | bit.ly/menu, WA | wa.me/628...</code>`;
+        autoBtn.classList.add("hidden");
+      } else if (mode === "direct_url") {
+        label.innerText = "Target URL Bebas (WA / Instagram / Web)";
+        helper.className = "text-[11px] text-slate-500 leading-relaxed";
+        helper.innerHTML = `Masukkan link bebas, contoh: <code class="bg-slate-100 px-1">https://wa.me/628123...</code>`;
+        autoBtn.classList.add("hidden");
+      } else {
+        label.innerText = "Informasi Kontak / WiFi (Label | Isi)";
+        helper.className = "text-[11px] text-slate-500 leading-relaxed";
+        helper.innerHTML = `Format: <code class="bg-slate-100 px-1">Password WiFi | KopiSenja123, Kasir | 08123...</code>`;
+        autoBtn.classList.add("hidden");
+      }
+    }
+
+    async function saveCardConfig() {
+      const card = cards.find(c => c.card_code === selectedCode);
+      if (!card) return;
+
+      const btn = document.getElementById("btn-save-config");
+      btn.innerHTML = "⏳ Menyimpan...";
+      btn.disabled = true;
+
+      const newLabel = document.getElementById("cfg-label-input").value.trim() || "Kartu Tanpa Nama";
+      const newUrl = document.getElementById("cfg-url-input").value.trim() || "https://maps.google.com";
+
+      const { data, error } = await supabaseClient
+        .from("cards")
+        .update({ label_name: newLabel, response_mode: selectedMode, target_url: newUrl })
+        .eq("card_code", selectedCode)
+        .select();
+
+      btn.innerHTML = "Simpan Perubahan";
+      btn.disabled = false;
+
+      if (error || !data || data.length === 0) {
+        showToast("❌ Gagal menyimpan: " + (error ? error.message : "tidak ada izin"));
+        return;
+      }
+      card.label_name = newLabel;
+      card.response_mode = selectedMode;
+      card.target_url = newUrl;
+      document.getElementById("cfg-header-name").innerText = newLabel;
+      document.getElementById("mm-selected-label").innerText = newLabel;
+
+      if (selectedMode === "review" && !extractDirectReviewUrl(newUrl)) {
+        showToast("⚠️ Tersimpan, namun disarankan mengubah ke Link Ulasan Resmi.");
+      } else {
+        showToast("✅ Konfigurasi kartu berhasil disimpan!");
+      }
+      renderAll();
+    }
+
+    async function deleteSelectedCard() {
+      if (!selectedCode) return;
+      if (!confirm("Apakah Anda yakin ingin MENGHAPUS kartu ini? Aksi ini tidak dapat dibatalkan!")) return;
+
+      const { data, error } = await supabaseClient.from("cards").delete().eq("card_code", selectedCode).select();
+      if (error || !data || data.length === 0) {
+        showToast("❌ Gagal menghapus kartu" + (error ? ": " + error.message : "."));
+        return;
+      }
+      showToast("🗑️ Kartu berhasil dihapus dari sistem.");
+      selectedCode = null;
+      loadCards();
+    }
+
+    async function toggleCardStatus(code) {
+      const card = cards.find(c => c.card_code === code);
+      if (!card) return;
+      const next = card.status === "ACTIVE" ? "SUSPENDED" : "ACTIVE";
+      const { data, error } = await supabaseClient.from("cards").update({ status: next }).eq("card_code", code).select();
+      if (error || !data || data.length === 0) {
+        showToast("❌ Gagal mengubah status kartu" + (error ? ": " + error.message : "."));
+        return;
+      }
+      card.status = next;
+      renderAll();
+      showToast(next === "ACTIVE" ? "🔓 Kartu diaktifkan kembali." : "🔒 Kartu berhasil dikunci.");
+    }
+
+    function openAddCardModal() {
+      document.getElementById("modal-add-card").classList.remove("hidden");
+      
+      // 1. Buat 4 karakter acak (Huruf Kapital & Angka)
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      let randomString = "";
+      for (let i = 0; i < 4; i++) {
+        randomString += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      
+      // 2. Gabungkan awalan WIN dengan 4 karakter acak tersebut
+      document.getElementById("new-card-code").value = "WIN" + randomString;
+      
+      document.getElementById("new-card-name").value = "";
+      const isAdmin = currentUser && currentUser.email === SUPER_ADMIN_EMAIL;
+      document.getElementById("new-card-owner-wrap").classList.toggle("hidden", !isAdmin);
+      if (isAdmin) document.getElementById("new-card-owner").value = "";
+    }
+    function closeAddCardModal() { document.getElementById("modal-add-card").classList.add("hidden"); }
+
+    async function submitNewCard() {
+      const code = document.getElementById("new-card-code").value.trim().toUpperCase();
+      const name = document.getElementById("new-card-name").value.trim();
+      let ownerEmail = String(currentUser.email).toLowerCase();
+
+      if (currentUser.email === SUPER_ADMIN_EMAIL) {
+        const inputOwner = document.getElementById("new-card-owner").value.trim().toLowerCase();
+        if (inputOwner) {
+          if (!inputOwner.includes("@")) return showToast("⚠️ Email pemilik tidak valid!");
+          ownerEmail = inputOwner;
+        }
+      }
+
+      if (!code || !name) return showToast("⚠️ Kode dan nama kartu wajib diisi!");
+      if (!/^[A-Z0-9_-]{3,32}$/.test(code)) return showToast("⚠️ Kode kartu hanya boleh huruf, angka, tanda - dan _ (3–32 karakter).");
+
+      const newCard = {
+        card_code: code,
+        owner_email: ownerEmail,
+        label_name: name,
+        response_mode: "review",
+        target_url: "https://maps.google.com",
+        status: "ACTIVE",
+        tap_count: 0
+      };
+
+      const { error } = await supabaseClient.from("cards").insert([newCard]);
+      if (error) {
+        showToast("❌ Gagal menyimpan kartu! Pastikan kode belum pernah dipakai.");
+      } else {
+        closeAddCardModal();
+        showToast("✨ Kartu PINGO baru berhasil didaftarkan!");
+        selectedCode = code;
+        loadCards();
+      }
+    }
+
+    function openTransferModal() {
+      const card = cards.find(c => c.card_code === selectedCode);
+      if (!card) return;
+      document.getElementById("transfer-card-name").innerText = `"${card.label_name}"`;
+      document.getElementById("transfer-email-input").value = card.owner_email;
+      document.getElementById("modal-transfer").classList.remove("hidden");
+    }
+    function closeTransferModal() { document.getElementById("modal-transfer").classList.add("hidden"); }
+
+    async function submitTransferCard() {
+      const card = cards.find(c => c.card_code === selectedCode);
+      const newOwner = document.getElementById("transfer-email-input").value.trim().toLowerCase();
+      if (!newOwner || !newOwner.includes("@")) return showToast("⚠️ Masukkan alamat email klien yang valid!");
+      
+      const { error } = await supabaseClient.from("cards").update({ owner_email: newOwner }).eq("card_code", selectedCode);
+      if (error) {
+        showToast("❌ Gagal transfer kartu: " + error.message);
+      } else {
+        closeTransferModal();
+        showToast(`✅ Kartu ${card.label_name} sukses ditransfer ke ${newOwner}`);
+        loadCards();
+      }
+    }
+
+    function openHelpModal() { document.getElementById("modal-help").classList.remove("hidden"); }
+    function closeHelpModal() { document.getElementById("modal-help").classList.add("hidden"); }
+
+    function openQrModal() {
+      const link = document.getElementById("cfg-nfc-url").innerText;
+      if (!link) return;
+      const encodedLink = encodeURIComponent(link);
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodedLink}&margin=10`;
+      
+      document.getElementById("qr-image").src = qrUrl;
+      document.getElementById("qr-url-box").value = link;
+      document.getElementById("qr-download-btn").href = qrUrl;
+      document.getElementById("modal-qr").classList.remove("hidden");
+    }
+    function closeQrModal() { document.getElementById("modal-qr").classList.add("hidden"); }
+
+    async function copyRedirectLink() {
+      const link = document.getElementById("cfg-nfc-url").innerText || document.getElementById("qr-url-box").value;
+      if (!link) return;
+      try {
+        await navigator.clipboard.writeText(link);
+        showToast("📋 Link disalin! Silakan tempel ke aplikasi NFC Tools.");
+      } catch (e) {
+        window.prompt("Salin link ini secara manual:", link);
+      }
+    }
+
+    function renderAll() {
+      const totalTaps = cards.reduce((sum, c) => sum + (Number(c.tap_count) || 0), 0);
+      const totalMedia = cards.length;
+      const activeCount = cards.filter(c => c.status === "ACTIVE").length;
+
+      document.getElementById("ov-total-taps").innerText = totalTaps;
+      document.getElementById("ov-total-media").innerText = totalMedia;
+      document.getElementById("ov-active-media").innerText = activeCount;
+      
+      document.getElementById("mm-total-media").innerText = totalMedia;
+      document.getElementById("mm-total-taps").innerText = totalTaps;
+      document.getElementById("mm-active-count").innerText = activeCount;
+      document.getElementById("mm-badge-count").innerText = totalMedia;
+      
+      document.getElementById("an-total-taps").innerText = totalTaps;
+      document.getElementById("an-total-media").innerText = totalMedia;
+      document.getElementById("st-badge-count").innerText = totalMedia;
+
+      const ovContainer = document.getElementById("ov-active-cards");
+      ovContainer.innerHTML = cards.slice(0, 3).map(c => `
+        <div data-code="${esc(c.card_code)}" onclick="switchTab('media'); selectCard(this.dataset.code)" class="cursor-pointer bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:border-blue-300 hover:shadow-md transition">
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-9 h-9 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold">💳</div>
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${c.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}">${esc(c.status)}</span>
+          </div>
+          <p class="text-sm font-bold text-slate-900 truncate">${esc(c.label_name)}</p>
+          <p class="text-xs text-slate-400 mt-1">📶 ${Number(c.tap_count) || 0} interaksi pengunjung</p>
+        </div>
+      `).join("");
+
+      const qMedia = (document.getElementById("search-media").value || "").toLowerCase();
+      const mmList = document.getElementById("mm-card-list");
+      mmList.innerHTML = cards
+        .filter(c => String(c.label_name || "").toLowerCase().includes(qMedia) || String(c.card_code || "").toLowerCase().includes(qMedia) || (c.owner_email && c.owner_email.toLowerCase().includes(qMedia)))
+        .map(c => {
+          const isSel = c.card_code === selectedCode;
+          const isAdmin = currentUser && currentUser.email === SUPER_ADMIN_EMAIL;
+          return `
+            <div data-code="${esc(c.card_code)}" onclick="selectCard(this.dataset.code)" class="cursor-pointer p-3.5 rounded-2xl border transition flex items-center justify-between ${isSel ? 'border-blue-500 bg-blue-50/40 shadow-sm' : 'border-slate-100 hover:bg-slate-50'}">
+              <div class="flex items-center gap-3 overflow-hidden">
+                <div class="w-9 h-9 shrink-0 rounded-full ${isSel ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'} flex items-center justify-center text-xs font-bold">💳</div>
+                <div class="overflow-hidden">
+                  <p class="text-xs font-bold text-slate-900 truncate">${esc(c.label_name)}</p>
+                  <p class="text-[11px] text-slate-400 font-mono truncate">${esc(c.card_code)} · ⚡ ${Number(c.tap_count) || 0} taps</p>
+                  ${isAdmin ? `<p class="text-[9px] font-medium text-indigo-500 truncate mt-0.5">${esc(c.owner_email)}</p>` : ''}
+                </div>
+              </div>
+              <span class="px-2 py-0.5 shrink-0 rounded-full text-[10px] font-bold ${c.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}">${c.status === 'ACTIVE' ? 'ON' : 'OFF'}</span>
+            </div>
+          `;
+        }).join("");
+
+      const maxTap = Math.max(...cards.map(c => Number(c.tap_count) || 0), 1);
+      const topCard = cards.reduce((prev, current) => ((Number(prev.tap_count)||0) > (Number(current.tap_count)||0)) ? prev : current, {label_name: "-", tap_count: -1});
+      document.getElementById("an-top-card").innerText = topCard.tap_count >= 0 ? topCard.label_name : "-";
+      
+      document.getElementById("an-bars").innerHTML = [...cards].sort((a,b) => (Number(b.tap_count)||0) - (Number(a.tap_count)||0)).map(c => {
+        const pct = Math.round(((Number(c.tap_count) || 0) / maxTap) * 100);
+        return `
+          <div class="space-y-1">
+            <div class="flex justify-between text-xs">
+              <span class="font-semibold text-slate-700 truncate">${esc(c.label_name)} <span class="text-slate-400 font-mono text-[10px]">(${esc(c.card_code)})</span></span>
+              <span class="font-bold text-slate-900">${Number(c.tap_count) || 0} taps</span>
+            </div>
+            <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full bg-blue-600 rounded-full transition-all" style="width: ${pct}%"></div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      const qSet = (document.getElementById("search-settings").value || "").toLowerCase();
+      const fStat = document.getElementById("filter-status").value;
+      document.getElementById("st-card-list").innerHTML = cards
+        .filter(c => (fStat === "ALL" || c.status === fStat) && (String(c.label_name || "").toLowerCase().includes(qSet) || String(c.card_code || "").toLowerCase().includes(qSet)))
+        .map(c => {
+          const isAct = c.status === "ACTIVE";
+          return `
+            <div class="p-4 rounded-2xl border border-slate-100 flex flex-wrap items-center justify-between gap-4">
+              <div class="flex items-center gap-3.5 overflow-hidden">
+                <div class="w-10 h-10 shrink-0 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center font-bold ${isAct ? 'text-blue-600' : 'text-slate-400'}">💳</div>
+                <div class="overflow-hidden">
+                  <div class="flex items-center gap-2">
+                    <p class="text-sm font-bold text-slate-900 truncate">${esc(c.label_name)}</p>
+                    <span class="px-2 py-0.5 shrink-0 rounded-full text-[10px] font-bold ${isAct ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}">● ${isAct ? 'Aktif' : 'Suspended'}</span>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-0.5 truncate">NFC Card · <span class="font-mono">${esc(c.card_code)}</span> · ${Number(c.tap_count) || 0} interaksi</p>
+                </div>
+              </div>
+              <button type="button" data-code="${esc(c.card_code)}" onclick="toggleCardStatus(this.dataset.code)" class="px-4 py-2 shrink-0 rounded-xl text-xs font-bold border transition ${isAct ? 'bg-white text-rose-600 border-rose-200 hover:bg-rose-50' : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'}">
+                ${isAct ? '🔒 Kunci / Suspend' : '🔓 Aktifkan Kembali'}
+              </button>
+            </div>
+          `;
+        }).join("");
+
+      lucide.createIcons();
+    }
+
+    // =========================================================================
+    // AUTHENTICATION LOGIC (SUPABASE OAUTH & EMAIL)
+    // =========================================================================
+
+    let lastUserId = null;
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        const sameUser = lastUserId === session.user.id;
+        currentUser = session.user;
+        if (sameUser) return;
+        lastUserId = session.user.id;
+        document.getElementById("login-screen").classList.add("hidden");
+        document.getElementById("dashboard-screen").classList.remove("hidden");
+        
+        let emailName = currentUser.email.split('@')[0];
+        let displayName = currentUser.user_metadata?.full_name || (emailName.charAt(0).toUpperCase() + emailName.slice(1));
+        let avatarUrl = currentUser.user_metadata?.avatar_url;
+
+        document.getElementById("ov-greeting-name").innerText = displayName.split(" ")[0];
+        document.getElementById("user-email-display").innerText = currentUser.email;
+        document.getElementById("user-name-display").innerText = displayName;
+        document.getElementById("settings-email").innerText = currentUser.email;
+        document.getElementById("settings-name").innerText = displayName;
+
+        const sAvatar = document.getElementById("sidebar-avatar");
+        const stAvatar = document.getElementById("settings-avatar");
+        if (avatarUrl) {
+          [sAvatar, stAvatar].forEach(el => {
+            el.innerHTML = "";
+            const im = document.createElement("img");
+            im.src = avatarUrl; im.referrerPolicy = "no-referrer";
+            im.className = "w-full h-full object-cover rounded-full";
+            el.appendChild(im);
+          });
+        } else {
+          const init = displayName.substring(0, 2).toUpperCase();
+          sAvatar.innerHTML = init; stAvatar.innerHTML = init;
+        }
+
+        const roleBadge = document.getElementById("role-badge");
+        const transferBtn = document.getElementById("btn-transfer-card");
+        
+        if (currentUser.email === SUPER_ADMIN_EMAIL) {
+          roleBadge.innerText = "SUPER ADMIN";
+          roleBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200";
+          transferBtn.classList.remove("hidden");
+        } else {
+          roleBadge.innerText = "KLIEN / USER";
+          roleBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200";
+          transferBtn.classList.add("hidden");
+        }
+
+        // Delay sedikit agar tidak macet
+        setTimeout(loadCards, 0);
+
+      } else {
+        lastUserId = null;
+        currentUser = null;
+        document.getElementById("login-screen").classList.remove("hidden");
+        document.getElementById("dashboard-screen").classList.add("hidden");
+        // Reset data array jika pindah user
+        cards = []; 
+      }
+    });
+
+    async function handleGoogleLogin() {
+      const { error } = await supabaseClient.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin + window.location.pathname }
+      });
+      if (error) {
+        const errBox = document.getElementById("auth-error");
+        errBox.innerText = error.message;
+        errBox.classList.remove("hidden");
+      }
+    }
+
+    async function handleLogin() {
+      const email = document.getElementById("auth-email").value.trim();
+      const password = document.getElementById("auth-password").value;
+      const errBox = document.getElementById("auth-error");
+      errBox.classList.add("hidden");
+      if (!email || !password) { errBox.innerText = "Email dan password wajib diisi."; errBox.classList.remove("hidden"); return; }
+
+      const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      if (error) {
+        errBox.innerText = error.message;
+        errBox.classList.remove("hidden");
+      }
+    }
+
+    async function handleRegister() {
+      const email = document.getElementById("auth-email").value.trim();
+      const password = document.getElementById("auth-password").value;
+      const errBox = document.getElementById("auth-error");
+      errBox.classList.add("hidden");
+      if (!email.includes("@") || password.length < 6) {
+        errBox.innerText = "Isi email yang valid dan password minimal 6 karakter.";
+        errBox.classList.remove("hidden");
+        return;
+      }
+
+      const { data, error } = await supabaseClient.auth.signUp({ email, password });
+      if (error) {
+        errBox.innerText = error.message;
+        errBox.classList.remove("hidden");
+      } else if (data && data.session) {
+        alert("Pendaftaran berhasil! Anda akan langsung masuk ke Dashboard.");
+      } else {
+        alert("Pendaftaran berhasil! Silakan cek email Anda untuk konfirmasi, lalu masuk.");
+      }
+    }
+
+    ["auth-email", "auth-password"].forEach(id =>
+      document.getElementById(id).addEventListener("keydown", e => { if (e.key === "Enter") handleLogin(); })
+    );
+
+    async function handleLogout() {
+      await supabaseClient.auth.signOut();
+    }
+
+// TAMBAHKAN BARIS INI: 
+    // Memicu pembuatan ikon secara global saat web pertama kali dibuka
+    lucide.createIcons();
+  </script>
+</body>
+</html>

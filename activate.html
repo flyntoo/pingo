@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aktivasi Kartu PINGO</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Supabase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f4f8ff; }
+    .pingo-gradient { background: linear-gradient(135deg, #021447 0%, #052c8f 55%, #0066ff 100%); }
+    .pingo-btn { background: linear-gradient(135deg, #052c8f 0%, #0066ff 100%); }
+    .pingo-btn:hover { background: linear-gradient(135deg, #021b60 0%, #0052cc 100%); }
+    /* Scrollbar tersembunyi untuk menu HP */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="text-slate-800 min-h-screen flex items-center justify-center bg-white md:bg-transparent">
+
+  <!-- Latar Belakang Biru (Hanya Tampil di Layar PC/Tablet) -->
+  <div class="hidden md:block absolute inset-0 pingo-gradient"></div>
+  
+  <!-- Kontainer Card Aktivasi -->
+  <div class="relative z-10 bg-white w-full h-full md:h-auto md:max-h-[95vh] md:max-w-[420px] md:rounded-[2rem] md:shadow-2xl flex flex-col px-6 py-4 md:px-10 md:py-6 border-0 md:border border-sky-100 overflow-y-auto overflow-x-hidden no-scrollbar">
+    
+    <!-- Dekorasi Gelombang Abstrak di Latar Belakang HP -->
+    <div class="absolute top-[-50px] left-[-50px] w-48 h-48 bg-sky-50 rounded-full mix-blend-multiply blur-2xl opacity-60 md:hidden z-0"></div>
+    <div class="absolute top-[-20px] right-[-50px] w-40 h-40 bg-blue-50 rounded-full mix-blend-multiply blur-2xl opacity-60 md:hidden z-0"></div>
+
+    <!-- Konten Form -->
+    <div class="w-full max-w-sm mx-auto space-y-4 relative z-10 flex-1 flex flex-col justify-center my-auto">
+      
+      <!-- Maskot & Tipografi PINGO -->
+      <div class="text-center pt-0">
+        <img src="login.png.png" alt="PINGO Logo" class="w-20 h-20 md:w-24 md:h-24 mx-auto object-contain relative z-10 drop-shadow-md" />
+        <div class="mt-[-12px] md:mt-[-14px] flex flex-col items-center">
+          <img src="tipografi.png" alt="PINGO Text Branding" class="w-36 md:w-40 mx-auto object-contain" />
+        </div>
+      </div>
+
+      <!-- Teks Sambutan Aktivasi -->
+      <div class="text-center space-y-0.5 mt-1">
+        <h2 class="text-[20px] md:text-[22px] font-extrabold text-[#021859] tracking-tight">Aktivasi Kartu</h2>
+        <p class="text-[12px] md:text-[13px] text-slate-500 font-medium">Lengkapi profil bisnis untuk mengaktifkan kartu</p>
+      </div>
+
+      <!-- Kotak Tampilan Kode Kartu -->
+      <div class="bg-blue-50/50 border border-blue-100 p-2.5 rounded-[14px] flex items-center justify-between shadow-sm mt-2">
+        <span class="text-xs font-semibold text-[#052c8f] flex items-center gap-1.5">
+            <i data-lucide="credit-card" class="w-4 h-4"></i> ID Kartu:
+        </span>
+        <span id="display-code" class="text-[13px] font-mono font-bold px-2.5 py-1 bg-white border border-blue-100 rounded-lg text-[#0066ff] shadow-sm tracking-wider">...</span>
+      </div>
+
+      <!-- Form Input dengan Ikon -->
+      <form id="activation-form" class="space-y-3 pt-1" onsubmit="handleActivation(event)">
+        
+        <!-- Input Nama Kafe -->
+        <div class="relative flex items-center border border-slate-200 rounded-[14px] bg-white focus-within:border-[#0066ff] focus-within:ring-2 focus-within:ring-blue-100 transition-all shadow-sm">
+          <div class="pl-4 pr-3 text-[#052c8f]">
+              <i data-lucide="store" class="w-5 h-5"></i>
+          </div>
+          <div class="h-6 w-px bg-slate-200"></div>
+          <input type="text" id="act-name" required placeholder="Nama Kafe / Bisnis" class="w-full pl-3 pr-4 py-2.5 bg-transparent text-[13px] font-medium outline-none text-slate-700 placeholder:font-normal" />
+        </div>
+        
+        <!-- Input Email -->
+        <div class="relative flex items-center border border-slate-200 rounded-[14px] bg-white focus-within:border-[#0066ff] focus-within:ring-2 focus-within:ring-blue-100 transition-all shadow-sm">
+          <div class="pl-4 pr-3 text-[#052c8f]">
+              <i data-lucide="mail" class="w-5 h-5"></i>
+          </div>
+          <div class="h-6 w-px bg-slate-200"></div>
+          <input type="email" id="act-email" required placeholder="Email Anda (Untuk akses Login)" class="w-full pl-3 pr-4 py-2.5 bg-transparent text-[13px] font-medium outline-none text-slate-700 placeholder:font-normal" />
+        </div>
+        
+        <!-- Input Link Maps -->
+        <div class="relative flex items-center border border-slate-200 rounded-[14px] bg-white focus-within:border-[#0066ff] focus-within:ring-2 focus-within:ring-blue-100 transition-all shadow-sm">
+          <div class="pl-4 pr-3 text-[#052c8f]">
+              <i data-lucide="map-pin" class="w-5 h-5"></i>
+          </div>
+          <div class="h-6 w-px bg-slate-200"></div>
+          <input type="url" id="act-url" required placeholder="Tautan Bagikan Google Maps" class="w-full pl-3 pr-4 py-2.5 bg-transparent text-[13px] font-medium outline-none text-slate-700 placeholder:font-normal" />
+        </div>
+
+        <div class="pt-2">
+            <button type="submit" id="btn-submit" class="w-full py-3 pingo-btn text-white font-bold rounded-xl text-sm transition shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 group">
+              <i data-lucide="zap" class="w-4 h-4 text-amber-300"></i>
+              Aktifkan Kartu Sekarang
+            </button>
+        </div>
+      </form>
+
+      <!-- Footer -->
+      <div class="pt-3 pb-1 flex items-center justify-center gap-3 opacity-60">
+        <div class="h-px w-8 bg-blue-900/20"></div>
+        <span class="text-[9px] font-bold text-[#052c8f] tracking-widest uppercase">Developing By Win</span>
+        <div class="h-px w-8 bg-blue-900/20"></div>
+      </div>
+    </div>
+    
+    <!-- Dekorasi Gelombang Bawah Khusus HP -->
+    <svg class="absolute bottom-0 left-0 w-full h-auto text-blue-50/60 md:hidden z-0 pointer-events-none" viewBox="0 0 1440 250" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,160L48,165.3C96,171,192,181,288,170.7C384,160,480,128,576,128C672,128,768,160,864,176C960,192,1056,192,1152,181.3C1248,171,1344,149,1392,138.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+    </svg>
+  </div>
+
+  <script>
+    // Inisialisasi ikon Lucide
+    lucide.createIcons();
+
+    // KUNCI SUPABASE SAMA DENGAN FILE LAIN
+    const SUPABASE_URL = "https://dposmaipgqgbqvhveifa.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwb3NtYWlwZ3FnYnF2aHZlaWZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1NzQxNzAsImV4cCI6MjEwODE1MDE3MH0.za8FIv0H4q57x4ZhGcUalJbRKrZUSl9tae5q0lN2A6g";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Ambil ID dari URL
+    const params = new URLSearchParams(window.location.search);
+    const cardCode = (params.get("id") || "").trim().toUpperCase();
+
+    if (!cardCode) {
+      alert("Kode kartu tidak ditemukan di URL!");
+      window.location.replace("index.html");
+    } else {
+      document.getElementById("display-code").innerText = cardCode;
+    }
+
+    async function handleActivation(e) {
+      e.preventDefault();
+      const btn = document.getElementById("btn-submit");
+      const originalText = btn.innerHTML;
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Mengaktifkan...`;
+      lucide.createIcons();
+      btn.disabled = true;
+
+      const name = document.getElementById("act-name").value.trim();
+      const email = document.getElementById("act-email").value.trim().toLowerCase();
+      const url = document.getElementById("act-url").value.trim();
+
+      const newCard = {
+        card_code: cardCode,
+        owner_email: email,
+        label_name: name,
+        response_mode: "review",
+        target_url: url,
+        status: "ACTIVE",
+        tap_count: 0
+      };
+
+      // Simpan ke database
+      const { error } = await supabase.from("cards").insert([newCard]);
+
+      if (error) {
+        alert("Gagal mengaktifkan kartu. Mungkin kode ini sudah terdaftar sebelumnya.\nDetail: " + error.message);
+        btn.innerHTML = originalText;
+        lucide.createIcons();
+        btn.disabled = false;
+      } else {
+        // Lempar kembali ke c.html untuk langsung mengetes efek bintang 5-nya!
+        window.location.replace("c.html?id=" + cardCode);
+      }
+    }
+  </script>
+</body>
+</html>

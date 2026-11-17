@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Menghubungkan... — PINGO</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #021859; }
+  </style>
+</head>
+<body class="text-white min-h-screen flex items-center justify-center p-6">
+  
+  <div id="loading-ui" class="max-w-sm w-full bg-[#0a2370] border border-[#1a3890] rounded-3xl p-8 text-center shadow-2xl space-y-4">
+    <div id="icon-box" class="w-14 h-14 rounded-2xl bg-[#0070ff] text-[#00d4ff] font-extrabold text-2xl flex items-center justify-center mx-auto animate-pulse shadow-lg">
+      P
+    </div>
+    <h1 id="title-text" class="text-lg font-extrabold tracking-tight">PINGO Smart Tap</h1>
+    <p id="sub-text" class="text-xs text-[#6084e0]">Satu Sentuhan, Langsung Terhubung...</p>
+  </div>
+
+  <div id="dynamic-ui" class="hidden w-full max-w-sm space-y-6">
+    <div class="text-center space-y-2">
+      <div class="w-20 h-20 rounded-full bg-[#0a2370] border-4 border-[#0070ff] mx-auto flex items-center justify-center text-3xl shadow-lg shadow-[#0070ff]/20">👋</div>
+      <h1 id="dynamic-title" class="text-xl font-extrabold text-white">Nama Bisnis</h1>
+      <p id="dynamic-desc" class="text-sm text-[#00d4ff]">Pilih menu di bawah ini</p>
+    </div>
+    <div id="dynamic-content" class="space-y-3"></div>
+    <div class="text-center pt-8 pb-4">
+      <p class="text-[10px] text-[#6084e0] font-bold tracking-widest uppercase">Powered by PINGO NFC</p>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://dposmaipgqgbqvhveifa.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwb3NtYWlwZ3FnYnF2aHZlaWZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1NzQxNzAsImV4cCI6MjEwODE1MDE3MH0.za8FIv0H4q57x4ZhGcUalJbRKrZUSl9tae5q0lN2A6g";
+
+    function featureIdToPlaceId(hex1, hex2) {
+      try {
+        const h1 = hex1.replace(/^0x/i, "").padStart(16, "0");
+        const h2 = hex2.replace(/^0x/i, "").padStart(16, "0");
+        const bytes = new Uint8Array(20);
+        bytes[0] = 0x0a; bytes[1] = 0x12; bytes[2] = 0x09;
+        for (let i = 0; i < 8; i++) bytes[3 + i] = parseInt(h1.slice((7 - i) * 2, (7 - i) * 2 + 2), 16);
+        bytes[11] = 0x11;
+        for (let i = 0; i < 8; i++) bytes[12 + i] = parseInt(h2.slice((7 - i) * 2, (7 - i) * 2 + 2), 16);
+        let bin = "";
+        for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+        return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+      } catch (e) { return null; }
+    }
+
+    function safeDecodeText(raw) {
+      if (!raw) return "";
+      let str = String(raw).replace(/\\u003a/gi, ":").replace(/\\x3a/gi, ":").replace(/\\u0026/gi, "&").replace(/\\u003d/gi, "=").replace(/\\+/g, "");
+      for (let i = 0; i < 3; i++) {
+        str = str.replace(/%(?:25)*([0-9a-fA-F]{2})/g, (match, hex) => {
+          try { return decodeURIComponent("%" + hex); } catch (e) { return match; }
+        });
+      }
+      return str;
+    }
+
+    function extractDirectReviewUrl(rawText) {
+      if (!rawText) return null;
+      const cleaned = safeDecodeText(rawText.trim());
+      const existingWriteReview = cleaned.match(/https?:\/\/search\.google\.com\/local\/writereview\?placeid=([A-Za-z0-9_-]{20,35})/i);
+      if (existingWriteReview) return `https://search.google.com/local/writereview?placeid=${existingWriteReview[1]}`;
+      const gpageMatch = cleaned.match(/(https?:\/\/(?:www\.)?g\.page\/r\/[A-Za-z0-9_-]+)/i);
+      if (gpageMatch) return gpageMatch[1].replace(/\/+$/, "") + "/review";
+      const fidMatch = cleaned.match(/(0x[0-9a-fA-F]{10,16})\s*(?::|%3A)\s*(0x[0-9a-fA-F]{10,16})/i);
+      if (fidMatch) {
+        const placeId = featureIdToPlaceId(fidMatch[1], fidMatch[2]);
+        if (placeId) return `https://search.google.com/local/writereview?placeid=${placeId}`;
+      }
+      const explicitPlaceId = cleaned.match(/(?:!19s|query_place_id=|place_id=|placeid=)(ChIJ[A-Za-z0-9_-]{23})(?:[^A-Za-z0-9_-]|$)/);
+      if (explicitPlaceId) return `https://search.google.com/local/writereview?placeid=${explicitPlaceId[1]}`;
+      const barePid = cleaned.match(/(?:^|[^A-Za-z0-9_-])(ChIJ[A-Za-z0-9_-]{23})(?![A-Za-z0-9_-])/);
+      if (barePid) return `https://search.google.com/local/writereview?placeid=${barePid[1]}`;
+      return null;
+    }
+
+    function safeUrl(u) {
+      u = (u || "").trim();
+      if (!u) return null;
+      if (!/^[a-z][a-z0-9+.-]*:/i.test(u)) u = "https://" + u.replace(/^\/+/, "");
+      return /^(https?|tel|mailto|sms):/i.test(u) ? u : null;
+    }
+
+    async function processTap() {
+      const params = new URLSearchParams(window.location.search);
+      const code = (params.get("id") || "").trim().toUpperCase();
+
+      if (!/^[A-Z0-9_-]{1,40}$/.test(code)) {
+        showError("Kode Kartu Tidak Ditemukan", "URL tidak valid. Pastikan link memiliki kode ?id=KODE.");
+        return;
+      }
+
+      let res;
+      let supabaseClient;
+      try {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        res = await supabaseClient.from('cards').select('*').eq('card_code', code).maybeSingle();
+      } catch (e) { res = { error: e }; }
+
+      if (res.error) {
+        showError("Gagal Terhubung", "Periksa koneksi internet Anda lalu tempelkan kembali kartunya.");
+        return;
+      }
+      
+      // LOGIKA AKTIVASI: JIKA KARTU KOSONG, LEMPAR KE ACTIVATE.HTML
+      if (!res.data) {
+        window.location.replace("activate.html?id=" + code);
+        return;
+      }
+
+      const card = res.data;
+      if (card.status !== "ACTIVE") {
+        showError("🔒 Kartu Dinonaktifkan", "Kartu ini sedang dikunci sementara (Suspended).");
+        return;
+      }
+
+      // Catat tap
+      const tapReq = supabaseClient.from('cards').update({ tap_count: (Number(card.tap_count) || 0) + 1 }).eq('card_code', code);
+      await Promise.race([tapReq.then(() => {}, () => {}), new Promise(r => setTimeout(r, 1200))]);
+
+      const mode = card.response_mode || "review";
+      let target = card.target_url || "https://maps.google.com";
+
+      if (mode === "multi_link" || mode === "emergency") {
+        renderDynamicUI(card.label_name, target, mode);
+        return;
+      }
+
+      if (mode === "review") {
+        const instantReview = extractDirectReviewUrl(target);
+        if (instantReview) target = instantReview;
+      }
+      
+      const dest = safeUrl(target);
+      if (!dest) {
+        showError("Tautan Tidak Valid", "Tujuan kartu ini belum diatur dengan benar.");
+        return;
+      }
+      window.location.replace(dest);
+    }
+
+    function showError(title, msg) {
+      document.getElementById("title-text").innerText = title;
+      document.getElementById("sub-text").innerText = msg;
+      document.getElementById("title-text").classList.replace("text-white", "text-[#ff9900]");
+      const iconBox = document.getElementById("icon-box");
+      iconBox.classList.remove("animate-pulse", "bg-[#0070ff]", "text-[#00d4ff]");
+      iconBox.classList.add("bg-rose-900", "text-white");
+      iconBox.innerText = "!";
+    }
+
+    function renderDynamicUI(name, rawText, mode) {
+      document.getElementById("loading-ui").classList.add("hidden");
+      document.getElementById("dynamic-ui").classList.remove("hidden");
+      document.getElementById("dynamic-title").innerText = name || "PINGO";
+      document.title = (name || "PINGO") + " — PINGO";
+
+      const container = document.getElementById("dynamic-content");
+      container.innerHTML = "";
+      const items = (rawText || "").split(",").map(i => i.trim()).filter(i => i);
+
+      if (items.length === 0) {
+        const p = document.createElement("p");
+        p.className = "text-center text-[#6084e0] text-sm";
+        p.textContent = "Belum ada informasi yang ditambahkan.";
+        container.appendChild(p);
+        return;
+      }
+
+      if (mode === "multi_link") {
+        document.getElementById("dynamic-desc").innerText = "Silakan pilih menu tujuan di bawah ini:";
+        items.forEach(item => {
+          const parts = item.split("|").map(p => p.trim());
+          const a = document.createElement("a");
+          a.href = safeUrl(parts.slice(1).join("|")) || "#";
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+          a.className = "block w-full py-4 px-6 bg-[#0a2370] hover:bg-[#0070ff] border border-[#1a3890] rounded-2xl text-center text-sm font-bold text-white transition-colors shadow-sm";
+          a.textContent = parts[0] || "Tautan Link";
+          container.appendChild(a);
+        });
+      } else {
+        document.getElementById("dynamic-desc").innerText = "Informasi Jaringan & Kontak:";
+        items.forEach(item => {
+          const parts = item.split("|").map(p => p.trim());
+          const box = document.createElement("div");
+          box.className = "w-full py-4 px-6 bg-[#0a2370] border border-[#1a3890] rounded-2xl flex flex-col items-center justify-center text-center";
+          const l = document.createElement("p");
+          l.className = "text-xs text-[#6084e0] mb-1";
+          l.textContent = parts[0] || "Info";
+          const v = document.createElement("p");
+          v.className = "text-lg font-mono font-bold text-[#00d4ff] select-all break-all";
+          v.textContent = parts.slice(1).join("|") || "-";
+          box.appendChild(l); box.appendChild(v);
+          container.appendChild(box);
+        });
+      }
+    }
+
+    processTap();
+  </script>
+</body>
+</html>
