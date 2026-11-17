@@ -23,6 +23,12 @@
 </head>
 <body class="text-slate-800 min-h-screen flex items-center justify-center bg-white md:bg-transparent">
 
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast-box" class="fixed top-5 right-5 z-[100] hidden max-w-sm px-4 py-3 rounded-2xl shadow-xl border flex items-center gap-3 text-[13px] font-bold transition-all">
+    <span id="toast-icon"></span>
+    <span id="toast-text">Notifikasi</span>
+  </div>
+
   <!-- Latar Belakang Biru (Hanya Tampil di Layar PC/Tablet) -->
   <div class="hidden md:block absolute inset-0 pingo-gradient"></div>
   
@@ -119,12 +125,34 @@
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwb3NtYWlwZ3FnYnF2aHZlaWZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1NzQxNzAsImV4cCI6MjEwODE1MDE3MH0.za8FIv0H4q57x4ZhGcUalJbRKrZUSl9tae5q0lN2A6g";
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    let toastTimer = null;
+    function showToast(msg, type = "error") {
+      const box = document.getElementById("toast-box");
+      const icon = document.getElementById("toast-icon");
+      document.getElementById("toast-text").innerText = msg;
+      
+      if (type === "success") {
+        box.className = "fixed top-5 right-5 z-[100] max-w-sm bg-emerald-50 text-emerald-700 border border-emerald-200 px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3 text-[13px] font-bold transition-all";
+        icon.innerHTML = '<i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-600"></i>';
+      } else {
+        box.className = "fixed top-5 right-5 z-[100] max-w-sm bg-rose-50 text-rose-700 border border-rose-200 px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3 text-[13px] font-bold transition-all";
+        icon.innerHTML = '<i data-lucide="alert-circle" class="w-5 h-5 text-rose-600"></i>';
+      }
+      lucide.createIcons();
+      box.classList.remove("hidden");
+      
+      clearTimeout(toastTimer);
+      if (type !== "success") {
+        toastTimer = setTimeout(() => box.classList.add("hidden"), 4000);
+      }
+    }
+
     // Ambil ID dari URL
     const params = new URLSearchParams(window.location.search);
     const cardCode = (params.get("id") || "").trim().toUpperCase();
 
     if (!cardCode) {
-      alert("Kode kartu tidak ditemukan di URL!");
+      // Lempar kembali ke dashboard jika tidak ada kode
       window.location.replace("index.html");
     } else {
       document.getElementById("display-code").innerText = cardCode;
@@ -142,27 +170,37 @@
       const email = document.getElementById("act-email").value.trim().toLowerCase();
       const url = document.getElementById("act-url").value.trim();
 
-      const newCard = {
-        card_code: cardCode,
-        owner_email: email,
-        label_name: name,
-        response_mode: "review",
-        target_url: url,
-        status: "ACTIVE",
-        tap_count: 0
-      };
-
-      // Simpan ke database
-      const { error } = await supabase.from("cards").insert([newCard]);
+      // Simpan ke database (Gunakan UPDATE karena kartu sudah ada)
+      const { data, error } = await supabase
+        .from("cards")
+        .update({
+          owner_email: email,
+          label_name: name,
+          target_url: url,
+          response_mode: "review",
+          status: "ACTIVE"
+        })
+        .eq("card_code", cardCode)
+        .select();
 
       if (error) {
-        alert("Gagal mengaktifkan kartu. Mungkin kode ini sudah terdaftar sebelumnya.\nDetail: " + error.message);
+        showToast("Gagal mengaktifkan kartu. Detail: " + error.message, "error");
+        btn.innerHTML = originalText;
+        lucide.createIcons();
+        btn.disabled = false;
+      } else if (!data || data.length === 0) {
+        showToast("Gagal! Kode kartu " + cardCode + " belum didaftarkan di sistem oleh Admin.", "error");
         btn.innerHTML = originalText;
         lucide.createIcons();
         btn.disabled = false;
       } else {
-        // Lempar kembali ke c.html untuk langsung mengetes efek bintang 5-nya!
-        window.location.replace("c.html?id=" + cardCode);
+        // Tampilkan Notifikasi Sukses
+        showToast("Kartu Berhasil Diaktivasi! Mengalihkan...", "success");
+        
+        // Lempar kembali ke c.html setelah jeda 2 detik agar notifikasi terbaca
+        setTimeout(() => {
+          window.location.replace("c.html?id=" + cardCode);
+        }, 2000);
       }
     }
   </script>
