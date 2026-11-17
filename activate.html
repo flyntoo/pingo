@@ -46,16 +46,15 @@
         <p class="text-[12px] md:text-[13px] text-slate-500 font-medium">Lengkapi profil bisnis untuk mengaktifkan kartu</p>
       </div>
 
-      <!-- Input Kode Kartu (Terkunci / Read-Only) -->
-      <div class="relative flex items-center border border-slate-200 rounded-[14px] bg-slate-50 cursor-not-allowed shadow-sm mt-2 mb-1">
-        <div class="pl-4 pr-3 text-slate-400">
-            <i data-lucide="hash" class="w-5 h-5"></i>
-        </div>
+      <!-- KOTAK ID KARTU TERKUNCI -->
+      <div class="relative flex items-center border border-slate-200 rounded-[14px] bg-slate-50 shadow-sm mt-2 mb-1">
+        <div class="pl-4 pr-3 text-slate-400"><i data-lucide="hash" class="w-5 h-5"></i></div>
         <div class="h-6 w-px bg-slate-200"></div>
-        <input type="text" id="display-code-input" readonly title="ID Kartu bawaan pabrik tidak dapat diubah" class="w-full pl-3 pr-4 py-2.5 bg-transparent text-[13px] font-mono font-extrabold tracking-widest outline-none text-slate-500 cursor-not-allowed" />
+        <input type="text" id="display-code-input" readonly title="ID Kartu bawaan pabrik" class="w-full pl-3 pr-4 py-2.5 bg-transparent text-[13px] font-mono font-extrabold tracking-widest outline-none text-slate-500 cursor-not-allowed" />
       </div>
 
-      <form id="activation-form" class="space-y-3 pt-1" onsubmit="handleActivation(event)">
+      <!-- FORM DENGAN PENGUNCI REFRESH -->
+      <form id="activation-form" class="space-y-3 pt-1" action="javascript:void(0);">
         
         <div class="relative flex items-center border border-slate-200 rounded-[14px] bg-white focus-within:border-[#0066ff] focus-within:ring-2 focus-within:ring-blue-100 transition-all shadow-sm">
           <div class="pl-4 pr-3 text-[#052c8f]"><i data-lucide="store" class="w-5 h-5"></i></div>
@@ -83,88 +82,97 @@
         </div>
       </form>
 
-      <div class="pt-3 pb-1 flex items-center justify-center gap-3 opacity-60">
-        <div class="h-px w-8 bg-blue-900/20"></div>
-        <span class="text-[9px] font-bold text-[#052c8f] tracking-widest uppercase">Developing By Win</span>
-        <div class="h-px w-8 bg-blue-900/20"></div>
+      <div class="pt-3 pb-1 flex flex-col items-center justify-center opacity-60">
+        <div class="flex items-center gap-3">
+          <div class="h-px w-8 bg-blue-900/20"></div>
+          <span class="text-[9px] font-bold text-[#052c8f] tracking-widest uppercase">Developing By Win</span>
+          <div class="h-px w-8 bg-blue-900/20"></div>
+        </div>
+        <span class="text-[8px] text-slate-400 mt-1">v2.1</span>
       </div>
     </div>
   </div>
 
   <script>
-    lucide.createIcons();
-
-    const SUPABASE_URL = "https://dposmaipgqgbqvhveifa.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwb3NtYWlwZ3FnYnF2aHZlaWZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1NzQxNzAsImV4cCI6MjEwODE1MDE3MH0.za8FIv0H4q57x4ZhGcUalJbRKrZUSl9tae5q0lN2A6g";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    let toastTimer = null;
-    function showToast(msg, type) {
-      const box = document.getElementById("toast-box");
-      const icon = document.getElementById("toast-icon");
-      document.getElementById("toast-text").innerText = msg;
+    // Pastikan kode dijalankan setelah semua elemen web selesai dimuat
+    document.addEventListener("DOMContentLoaded", () => {
       
-      box.className = "fixed top-5 right-5 z-[100] max-w-sm px-4 py-3 rounded-2xl shadow-xl border flex items-center gap-3 text-xs font-medium transition-all " + 
-        (type === "success" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-rose-50 text-rose-700 border-rose-200");
-      
-      icon.setAttribute("data-lucide", type === "success" ? "check-circle-2" : "alert-circle");
-      lucide.createIcons();
+      try { lucide.createIcons(); } catch(e) {}
 
-      box.classList.remove("hidden");
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => box.classList.add("hidden"), 3000);
-    }
+      const SUPABASE_URL = "https://dposmaipgqgbqvhveifa.supabase.co";
+      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwb3NtYWlwZ3FnYnF2aHZlaWZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1NzQxNzAsImV4cCI6MjEwODE1MDE3MH0.za8FIv0H4q57x4ZhGcUalJbRKrZUSl9tae5q0lN2A6g";
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const params = new URLSearchParams(window.location.search);
-    const cardCode = (params.get("id") || "").trim().toUpperCase();
+      let toastTimer = null;
+      function showToast(msg, type) {
+        const box = document.getElementById("toast-box");
+        const icon = document.getElementById("toast-icon");
+        document.getElementById("toast-text").innerText = msg;
+        
+        box.className = "fixed top-5 right-5 z-[100] max-w-sm px-4 py-3 rounded-2xl shadow-xl border flex items-center gap-3 text-xs font-medium transition-all " + 
+          (type === "success" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-rose-50 text-rose-700 border-rose-200");
+        
+        icon.setAttribute("data-lucide", type === "success" ? "check-circle-2" : "alert-circle");
+        lucide.createIcons();
 
-    if (!cardCode) {
-      showToast("Kode kartu tidak ditemukan!", "error");
-      setTimeout(() => window.location.replace("index.html"), 2000);
-    } else {
-      document.getElementById("display-code-input").value = cardCode;
-    }
-
-    async function handleActivation(e) {
-      // Baris ini sangat penting agar layar tidak refresh saat submit!
-      e.preventDefault(); 
-      
-      const btn = document.getElementById("btn-submit");
-      const btnText = document.getElementById("btn-text");
-      const originalText = btnText.innerText;
-      
-      btnText.innerText = "Mengaktifkan...";
-      btn.disabled = true;
-
-      const name = document.getElementById("act-name").value.trim();
-      const email = document.getElementById("act-email").value.trim().toLowerCase();
-      const url = document.getElementById("act-url").value.trim();
-
-      // Memperbarui data ke Supabase
-      const { data, error } = await supabase
-        .from("cards")
-        .update({
-          owner_email: email,
-          label_name: name,
-          target_url: url,
-          response_mode: "review",
-          status: "ACTIVE"
-        })
-        .eq("card_code", cardCode)
-        .select();
-
-      if (error || !data || data.length === 0) {
-        showToast("Gagal! Pastikan kode kartu sudah dibuat oleh Admin.", "error");
-        btnText.innerText = originalText;
-        btn.disabled = false;
-      } else {
-        showToast("Kartu Berhasil Diaktivasi! Mengalihkan...", "success");
-        // Beri jeda 2 detik agar klien bisa membaca pop-up
-        setTimeout(() => {
-          window.location.replace("c.html?id=" + cardCode);
-        }, 2000);
+        box.classList.remove("hidden");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => box.classList.add("hidden"), 3000);
       }
-    }
+
+      const params = new URLSearchParams(window.location.search);
+      const cardCode = (params.get("id") || "").trim().toUpperCase();
+
+      if (!cardCode) {
+        showToast("Kode kartu tidak ditemukan!", "error");
+        setTimeout(() => window.location.replace("index.html"), 2000);
+      } else {
+        document.getElementById("display-code-input").value = cardCode;
+      }
+
+      // Sistem penangkap klik tombol yang anti-refresh
+      const form = document.getElementById("activation-form");
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault(); 
+        
+        const btn = document.getElementById("btn-submit");
+        const btnText = document.getElementById("btn-text");
+        const originalText = btnText.innerText;
+        
+        btnText.innerText = "Mengaktifkan...";
+        btn.disabled = true;
+
+        const name = document.getElementById("act-name").value.trim();
+        const email = document.getElementById("act-email").value.trim().toLowerCase();
+        const url = document.getElementById("act-url").value.trim();
+
+        // Kirim Update ke Supabase
+        const { data, error } = await supabase
+          .from("cards")
+          .update({
+            owner_email: email,
+            label_name: name,
+            target_url: url,
+            response_mode: "review",
+            status: "ACTIVE"
+          })
+          .eq("card_code", cardCode)
+          .select();
+
+        // Validasi Hasil
+        if (error || !data || data.length === 0) {
+          showToast("Gagal! Pastikan kode kartu sudah dibuat oleh Admin.", "error");
+          btnText.innerText = originalText;
+          btn.disabled = false;
+        } else {
+          showToast("Kartu Berhasil Diaktivasi! Mengalihkan...", "success");
+          setTimeout(() => {
+            window.location.replace("c.html?id=" + cardCode);
+          }, 2000);
+        }
+      });
+
+    });
   </script>
 </body>
 </html>
