@@ -111,17 +111,28 @@
         return;
       }
       
-      // LOGIKA AKTIVASI: JIKA KARTU KOSONG, LEMPAR KE ACTIVATE.HTML
-      if (!res.data) {
+      <!-- ... existing code ... -->
+      if (res.error) {
+        showError("Gagal Terhubung", "Periksa koneksi internet Anda lalu tempelkan kembali kartunya.");
+        return;
+      }
+      
+      const card = res.data;
+
+      // LOGIKA AKTIVASI: JIKA KARTU BELUM ADA ATAU URL KOSONG, LEMPAR KE ACTIVATE.HTML
+      if (!card || !card.target_url) {
         window.location.replace("activate.html?id=" + code);
         return;
       }
 
-      const card = res.data;
       if (card.status !== "ACTIVE") {
         showError("🔒 Kartu Dinonaktifkan", "Kartu ini sedang dikunci sementara (Suspended).");
         return;
       }
+
+      // Catat tap
+      const tapReq = supabaseClient.from('cards').update({ tap_count: (Number(card.tap_count) || 0) + 1 }).eq('card_code', code);
+<!-- ... existing code ... -->
 
       // Catat tap
       const tapReq = supabaseClient.from('cards').update({ tap_count: (Number(card.tap_count) || 0) + 1 }).eq('card_code', code);
