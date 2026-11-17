@@ -91,72 +91,67 @@
     }
 
     async function processTap() {
-      const params = new URLSearchParams(window.location.search);
-      const code = (params.get("id") || "").trim().toUpperCase();
-
-      if (!/^[A-Z0-9_-]{1,40}$/.test(code)) {
-        showError("Kode Kartu Tidak Ditemukan", "URL tidak valid. Pastikan link memiliki kode ?id=KODE.");
-        return;
-      }
-
-      let res;
-      let supabaseClient;
       try {
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        res = await supabaseClient.from('cards').select('*').eq('card_code', code).maybeSingle();
-      } catch (e) { res = { error: e }; }
+        const params = new URLSearchParams(window.location.search);
+        const code = (params.get("id") || "").trim().toUpperCase();
 
-      if (res.error) {
-        showError("Gagal Terhubung", "Periksa koneksi internet Anda lalu tempelkan kembali kartunya.");
-        return;
+        if (!/^[A-Z0-9_-]{1,40}$/.test(code)) {
+          showError("Kode Kartu Tidak Ditemukan", "URL tidak valid. Pastikan link memiliki kode ?id=KODE.");
+          return;
+        }
+
+        // Perlindungan Timeout 10 detik agar tidak stuck loading
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const fetchPromise = supabaseClient.from('cards').select('*').eq('card_code', code).maybeSingle();
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Koneksi Database Timeout/Lambat")), 10000));
+        
+        const res = await Promise.race([fetchPromise, timeoutPromise]);
+
+        if (res.error) throw res.error;
+        
+        const card = res.data;
+
+        // LOGIKA AKTIVASI: JIKA KARTU BELUM ADA ATAU URL KOSONG, LEMPAR KE ACTIVATE.HTML
+        if (!card || !card.target_url || card.target_url.trim() === "" || card.target_url === "https://maps.google.com") {
+          window.location.href = "activate.html?id=" + code;
+          return;
+        }
+
+        if (card.status !== "ACTIVE") {
+          showError("🔒 Kartu Dinonaktifkan", "Kartu ini sedang dikunci sementara (Suspended).");
+          return;
+        }
+
+        // Catat tap
+        const tapReq = supabaseClient.from('cards').update({ tap_count: (Number(card.tap_count) || 0) + 1 }).eq('card_code', code);
+        await Promise.race([tapReq.then(() => {}, () => {}), new Promise(r => setTimeout(r, 1200))]);
+
+        const mode = card.response_mode || "review";
+        let target = card.target_url;
+
+        if (mode === "multi_link" || mode === "emergency") {
+          renderDynamicUI(card.label_name, target, mode);
+          return;
+        }
+
+        if (mode === "review") {
+          const instantReview = extractDirectReviewUrl(target);
+          if (instantReview) target = instantReview;
+        }
+        
+        const dest = safeUrl(target);
+        if (!dest) {
+          showError("Tautan Tidak Valid", "Tujuan kartu ini belum diatur dengan benar.");
+          return;
+        }
+        
+        // Pindah ke link tujuan dengan metode aman untuk semua tipe HP
+        window.location.href = dest;
+
+      } catch (e) {
+        // Jika ada masalah apapun, layar loading otomatis diganti dengan pesan error
+        showError("Sistem Sedang Sibuk", "Gagal memproses kartu. Detail: " + (e.message || "Unknown error"));
       }
-      
-      <!-- ... existing code ... -->
-      if (res.error) {
-        showError("Gagal Terhubung", "Periksa koneksi internet Anda lalu tempelkan kembali kartunya.");
-        return;
-      }
-      
-      const card = res.data;
-
-      // LOGIKA AKTIVASI: JIKA KARTU BELUM ADA ATAU URL KOSONG, LEMPAR KE ACTIVATE.HTML
-      if (!card || !card.target_url) {
-        window.location.replace("activate.html?id=" + code);
-        return;
-      }
-
-      if (card.status !== "ACTIVE") {
-        showError("🔒 Kartu Dinonaktifkan", "Kartu ini sedang dikunci sementara (Suspended).");
-        return;
-      }
-
-      // Catat tap
-      const tapReq = supabaseClient.from('cards').update({ tap_count: (Number(card.tap_count) || 0) + 1 }).eq('card_code', code);
-<!-- ... existing code ... -->
-
-      // Catat tap
-      const tapReq = supabaseClient.from('cards').update({ tap_count: (Number(card.tap_count) || 0) + 1 }).eq('card_code', code);
-      await Promise.race([tapReq.then(() => {}, () => {}), new Promise(r => setTimeout(r, 1200))]);
-
-      const mode = card.response_mode || "review";
-      let target = card.target_url || "https://maps.google.com";
-
-      if (mode === "multi_link" || mode === "emergency") {
-        renderDynamicUI(card.label_name, target, mode);
-        return;
-      }
-
-      if (mode === "review") {
-        const instantReview = extractDirectReviewUrl(target);
-        if (instantReview) target = instantReview;
-      }
-      
-      const dest = safeUrl(target);
-      if (!dest) {
-        showError("Tautan Tidak Valid", "Tujuan kartu ini belum diatur dengan benar.");
-        return;
-      }
-      window.location.replace(dest);
     }
 
     function showError(title, msg) {
