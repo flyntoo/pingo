@@ -1078,7 +1078,7 @@
     }
     function closeAddCardModal() { document.getElementById("modal-add-card").classList.add("hidden"); }
 
-    async function submitNewCard() {
+async function submitNewCard() {
       const code = document.getElementById("new-card-code").value.trim().toUpperCase();
       const name = document.getElementById("new-card-name").value.trim();
       let ownerEmail = String(currentUser.email).toLowerCase();
@@ -1094,12 +1094,13 @@
       if (!code || !name) return showToast("⚠️ Kode dan nama kartu wajib diisi!");
       if (!/^[A-Z0-9_-]{3,32}$/.test(code)) return showToast("⚠️ Kode kartu hanya boleh huruf, angka, tanda - dan _ (3–32 karakter).");
 
+      // PERBAIKAN: target_url sekarang DIBUAT KOSONG ("") agar berstatus Kartu Kosongan
       const newCard = {
         card_code: code,
         owner_email: ownerEmail,
         label_name: name,
         response_mode: "review",
-        target_url: "", // Dikosongkan agar c.html tahu kartu ini butuh aktivasi
+        target_url: "", 
         status: "ACTIVE",
         tap_count: 0
       };
