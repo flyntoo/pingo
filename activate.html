@@ -16,6 +16,9 @@
     .pingo-gradient { background: linear-gradient(135deg, #021447 0%, #052c8f 55%, #0066ff 100%); }
     .pingo-btn { background: linear-gradient(135deg, #052c8f 0%, #0066ff 100%); }
     .pingo-btn:hover { background: linear-gradient(135deg, #021b60 0%, #0052cc 100%); }
+    .brand-glow {
+      background: radial-gradient(circle at 50% 42%, rgba(219, 234, 254, 0.85) 0%, rgba(240, 249, 255, 0.45) 45%, rgba(255, 255, 255, 0) 75%);
+    }
     /* Scrollbar tersembunyi untuk layar HP */
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -35,18 +38,41 @@
   <!-- Kontainer Utama Card Aktivasi -->
   <div class="relative z-10 bg-white w-full min-h-screen md:min-h-0 md:h-auto md:max-h-[95vh] md:max-w-[430px] md:rounded-[2rem] md:shadow-2xl flex flex-col px-6 py-6 md:px-10 md:py-7 border-0 md:border border-sky-100 overflow-y-auto overflow-x-hidden no-scrollbar">
 
-    <!-- Dekorasi Latar Belakang Khusus HP -->
-    <div class="absolute top-[-50px] left-[-50px] w-48 h-48 bg-sky-50 rounded-full mix-blend-multiply blur-2xl opacity-60 md:hidden z-0 pointer-events-none"></div>
-    <div class="absolute top-[-20px] right-[-50px] w-40 h-40 bg-blue-50 rounded-full mix-blend-multiply blur-2xl opacity-60 md:hidden z-0 pointer-events-none"></div>
+    <!-- Dekorasi Cahaya Biru Lembut di Belakang Logo -->
+    <div class="absolute top-0 left-0 right-0 h-64 brand-glow z-0 pointer-events-none"></div>
+    <div class="absolute top-[-50px] left-[-50px] w-48 h-48 bg-sky-50 rounded-full mix-blend-multiply blur-2xl opacity-70 md:hidden z-0 pointer-events-none"></div>
+    <div class="absolute top-[-20px] right-[-50px] w-40 h-40 bg-blue-50 rounded-full mix-blend-multiply blur-2xl opacity-70 md:hidden z-0 pointer-events-none"></div>
 
     <!-- Konten Utama -->
-    <div class="w-full max-w-sm mx-auto space-y-4 relative z-10 flex-1 flex flex-col justify-center my-auto">
+    <div class="w-full max-w-sm mx-auto space-y-4 relative z-10 flex-1 flex flex-col justify-center my-auto pt-4">
 
-      <!-- Maskot & Tipografi PINGO -->
-      <div class="text-center pt-0">
-        <img src="login.png.png" alt="PINGO Logo" onerror="this.style.display='none'" class="w-20 h-20 md:w-24 md:h-24 mx-auto object-contain relative z-10 drop-shadow-md" />
-        <div class="mt-[-12px] md:mt-[-14px] flex flex-col items-center">
-          <img src="tipografi.png" alt="PINGO Text Branding" onerror="this.style.display='none'" class="w-36 md:w-40 mx-auto object-contain" />
+      <!-- ========================================== -->
+      <!-- HEADER BRAND: LOGO MASKOT & TIPOGRAFI      -->
+      <!-- ========================================== -->
+      <div class="flex flex-col items-center justify-center text-center select-none pb-1">
+        <!-- Maskot PINGO -->
+        <img
+          id="brand-logo-img"
+          src="login.png.png"
+          alt="Logo Maskot PINGO"
+          class="w-24 h-24 md:w-28 md:h-28 mx-auto object-contain relative z-10 drop-shadow-[0_8px_16px_rgba(2,24,89,0.16)]"
+        />
+
+        <!-- Tipografi PINGO + Tagline di bawah Logo -->
+        <div class="mt-[-4px] md:mt-[-6px] flex flex-col items-center relative z-10">
+          <img
+            id="brand-typo-img"
+            src="tipografi.jpg"
+            alt="PINGO — Satu Sentuhan, Langsung Terhubung."
+            class="w-40 md:w-44 mx-auto object-contain mix-blend-multiply"
+          />
+          <!-- Fallback teks hanya tampil jika file tipografi (.jpg / .png) tidak ditemukan -->
+          <div id="brand-typo-fallback" class="hidden text-center mt-1">
+            <div class="text-3xl font-extrabold tracking-tight text-[#021859] leading-none">
+              <span class="text-[#00aeff]">P</span>INGO
+            </div>
+            <p class="text-[10px] font-semibold text-[#052c8f] mt-1">Satu Sentuhan, Langsung Terhubung.</p>
+          </div>
         </div>
       </div>
 
@@ -55,22 +81,22 @@
       <!-- ========================================== -->
       <div id="activation-view" class="space-y-4">
         <!-- Judul & Subjudul -->
-        <div class="text-center space-y-0.5 mt-1">
-          <h2 class="text-[20px] md:text-[22px] font-extrabold text-[#021859] tracking-tight">Aktivasi Kartu</h2>
-          <p class="text-[12px] md:text-[13px] text-slate-500 font-medium">Lengkapi profil bisnis untuk mengaktifkan kartu</p>
+        <div class="text-center space-y-1">
+          <h2 class="text-[22px] font-extrabold text-[#021859] tracking-tight leading-tight">Aktivasi Kartu</h2>
+          <p class="text-[13px] text-slate-500 font-medium">Lengkapi profil bisnis untuk mengaktifkan kartu</p>
         </div>
 
         <!-- Kotak ID Kartu Terkunci (Read-Only) -->
-        <div class="relative flex items-center border border-slate-200 rounded-[14px] bg-slate-50 shadow-sm">
+        <div class="relative flex items-center border border-slate-200/90 rounded-[14px] bg-slate-50 shadow-sm mb-2">
           <div class="pl-4 pr-3 text-slate-400">
             <i data-lucide="hash" class="w-5 h-5"></i>
           </div>
           <div class="h-6 w-px bg-slate-200"></div>
-          <input type="text" id="display-code-input" readonly title="ID Kartu bawaan pabrik" class="w-full pl-3 pr-4 py-2.5 bg-transparent text-[13px] font-mono font-extrabold tracking-widest outline-none text-slate-500 cursor-not-allowed" />
+          <input type="text" id="display-code-input" readonly title="ID Kartu bawaan pabrik" class="w-full pl-3 pr-4 py-3 bg-transparent text-[13.5px] font-mono font-extrabold tracking-widest outline-none text-slate-500 cursor-not-allowed" />
         </div>
 
         <!-- Form Aktivasi (Anti-Refresh) -->
-        <form id="activation-form" class="space-y-3" action="javascript:void(0);">
+        <form id="activation-form" class="space-y-3 pt-1" action="javascript:void(0);">
 
           <!-- Input Nama Kafe / Bisnis -->
           <div class="relative flex items-center border border-slate-200 rounded-[14px] bg-white focus-within:border-[#0066ff] focus-within:ring-2 focus-within:ring-blue-100 transition-all shadow-sm">
@@ -78,7 +104,7 @@
               <i data-lucide="store" class="w-5 h-5"></i>
             </div>
             <div class="h-6 w-px bg-slate-200"></div>
-            <input type="text" id="act-name" required placeholder="Nama Kafe / Bisnis" class="w-full pl-3 pr-4 py-2.5 bg-transparent text-[13px] font-medium outline-none text-slate-700 placeholder:font-normal" />
+            <input type="text" id="act-name" required placeholder="Nama Kafe / Bisnis" class="w-full pl-3 pr-4 py-3 bg-transparent text-[13.5px] font-medium outline-none text-slate-700 placeholder:font-normal placeholder:text-slate-400" />
           </div>
 
           <!-- Input Email + Status Pengecekan Otomatis -->
@@ -88,7 +114,7 @@
                 <i data-lucide="mail" class="w-5 h-5"></i>
               </div>
               <div class="h-6 w-px bg-slate-200"></div>
-              <input type="email" id="act-email" required placeholder="Email Anda (Untuk kelola kartu)" autocomplete="email" class="w-full pl-3 pr-9 py-2.5 bg-transparent text-[13px] font-medium outline-none text-slate-700 placeholder:font-normal" />
+              <input type="email" id="act-email" required placeholder="Email Anda (Untuk kelola kartu)" autocomplete="email" class="w-full pl-3 pr-9 py-3 bg-transparent text-[13.5px] font-medium outline-none text-slate-700 placeholder:font-normal placeholder:text-slate-400" />
               <!-- Ikon Indikator Status Email -->
               <div id="email-status-spinner" class="hidden absolute right-3 text-[#0066ff]">
                 <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>
@@ -105,12 +131,12 @@
               <i data-lucide="map-pin" class="w-5 h-5"></i>
             </div>
             <div class="h-6 w-px bg-slate-200"></div>
-            <input type="text" id="act-url" required placeholder="Tautan Bagikan Google Maps" class="w-full pl-3 pr-4 py-2.5 bg-transparent text-[13px] font-medium outline-none text-slate-700 placeholder:font-normal" />
+            <input type="text" id="act-url" required placeholder="Tautan Bagikan Google Maps" class="w-full pl-3 pr-4 py-3 bg-transparent text-[13.5px] font-medium outline-none text-slate-700 placeholder:font-normal placeholder:text-slate-400" />
           </div>
 
           <!-- Tombol Aksi Utama & Tombol Daftar Akun -->
-          <div class="pt-2 space-y-2.5">
-            <button type="submit" id="btn-submit" class="w-full py-3 pingo-btn text-white font-bold rounded-xl text-sm transition shadow-md shadow-blue-500/20 flex items-center justify-center gap-2">
+          <div class="pt-3 space-y-2.5">
+            <button type="submit" id="btn-submit" class="w-full py-3.5 pingo-btn text-white font-bold rounded-[14px] text-sm transition shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2">
               <i data-lucide="zap" class="w-4 h-4 text-amber-300"></i>
               <span id="btn-text">Aktifkan Kartu Sekarang</span>
             </button>
@@ -146,13 +172,13 @@
       </div>
 
       <!-- Footer -->
-      <div class="pt-3 pb-1 flex flex-col items-center justify-center opacity-60">
+      <div class="pt-4 pb-2 flex flex-col items-center justify-center opacity-60">
         <div class="flex items-center gap-3">
           <div class="h-px w-8 bg-blue-900/20"></div>
           <span class="text-[9px] font-bold text-[#052c8f] tracking-widest uppercase">Developing By Win</span>
           <div class="h-px w-8 bg-blue-900/20"></div>
         </div>
-        <span class="text-[8px] text-slate-400 mt-1">v3.0</span>
+        <span class="text-[8px] text-slate-400 mt-1">v3.1</span>
       </div>
     </div>
 
@@ -231,6 +257,27 @@
   </div>
 
   <script>
+    // =========================================================================
+    // FALLBACK OTOMATIS GAMBAR LOGO & TIPOGRAFI (.png / .jpg)
+    // =========================================================================
+    function attachImageFallback(imgEl, candidates, onAllFailed) {
+      if (!imgEl) return;
+      let idx = 0;
+      const tryNext = () => {
+        idx += 1;
+        if (idx < candidates.length) {
+          imgEl.src = candidates[idx];
+        } else {
+          imgEl.style.display = "none";
+          if (typeof onAllFailed === "function") onAllFailed();
+        }
+      };
+      imgEl.addEventListener("error", tryNext);
+      if (imgEl.complete && imgEl.naturalWidth === 0) {
+        tryNext();
+      }
+    }
+
     // =========================================================================
     // KONFIGURASI SUPABASE & STATE GLOBAL
     // =========================================================================
@@ -367,7 +414,6 @@
         return "idle";
       }
 
-      // Jika baru saja didaftarkan di sesi ini, langsung anggap terdaftar
       if (justRegisteredEmails.has(email)) {
         emailCheckState = "registered";
         lastCheckedEmail = email;
@@ -379,12 +425,10 @@
       renderEmailStatusUI("checking");
 
       try {
-        // Memanggil fungsi RPC Supabase `check_email_exists`
         const { data: exists, error } = await supabaseClient.rpc("check_email_exists", {
           check_email: email
         });
 
-        // Pastikan input user belum berubah selama menunggu respon server
         const currentInput = (document.getElementById("act-email").value || "").trim().toLowerCase();
         if (currentInput !== email) return emailCheckState;
 
@@ -516,7 +560,6 @@
         });
 
         if (error) {
-          // Tangani jika Supabase mengembalikan pesan user sudah terdaftar
           if (/already registered|already exists/i.test(error.message || "")) {
             justRegisteredEmails.add(email);
             document.getElementById("act-email").value = email;
@@ -533,7 +576,6 @@
             statusEl.innerText = "Gagal mendaftar: " + error.message;
           }
         } else if (data && data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
-          // Email sudah ada di auth.users
           justRegisteredEmails.add(email);
           document.getElementById("act-email").value = email;
           emailCheckState = "registered";
@@ -542,7 +584,6 @@
           closeRegisterModal();
           showToast("Email sudah terdaftar! Silakan langsung klik Aktifkan Kartu.", "success", 4000);
         } else {
-          // Pendaftaran baru sukses!
           justRegisteredEmails.add(email);
           document.getElementById("act-email").value = email;
           if (!document.getElementById("act-name").value.trim()) {
@@ -598,7 +639,6 @@
       btn.disabled = true;
 
       try {
-        // Pastikan status pendaftaran email sudah terverifikasi sebelum aktivasi
         let status = emailCheckState;
         if (lastCheckedEmail !== email || status === "idle" || status === "checking") {
           status = await checkEmailRegistration(email, false);
@@ -612,7 +652,6 @@
           return;
         }
 
-        // Kirim Update Aktivasi ke Supabase
         const { data, error } = await supabaseClient
           .from("cards")
           .update({
@@ -632,7 +671,6 @@
           return;
         }
 
-        // Aktivasi Berhasil! Tampilkan Notifikasi & Layar Sukses
         const targetRedirect = "c.html?id=" + encodeURIComponent(cardCode);
         showToast("🎉 Yeayy aktivasi kartu berhasil, Selamat Yaaa!", "success", 5000);
 
@@ -657,6 +695,20 @@
     document.addEventListener("DOMContentLoaded", () => {
       try { lucide.createIcons(); } catch (e) {}
 
+      // Pasang fallback otomatis agar logo & tipografi tetap muncul baik berekstensi .jpg maupun .png
+      attachImageFallback(
+        document.getElementById("brand-logo-img"),
+        ["login.png.png", "login.png", "login.jpg"]
+      );
+      attachImageFallback(
+        document.getElementById("brand-typo-img"),
+        ["tipografi.jpg", "tipografi.png", "tipografi.jpeg"],
+        () => {
+          const fb = document.getElementById("brand-typo-fallback");
+          if (fb) fb.classList.remove("hidden");
+        }
+      );
+
       // Ambil ID Kartu dari URL
       const params = new URLSearchParams(window.location.search);
       cardCode = (params.get("id") || "").trim().toUpperCase();
@@ -668,7 +720,7 @@
         document.getElementById("display-code-input").value = cardCode;
       }
 
-      // Listener otomatis cek email saat diketik (debounce) atau selesai mengetik (blur)
+      // Listener otomatis cek email saat diketik atau selesai mengetik
       const emailInput = document.getElementById("act-email");
       emailInput.addEventListener("input", () => {
         clearTimeout(emailDebounceTimer);
