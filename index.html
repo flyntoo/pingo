@@ -39,17 +39,17 @@
     <!-- Latar Belakang Biru (Hanya Tampil di Layar PC/Tablet) -->
     <div class="hidden md:block absolute inset-0 pingo-gradient"></div>
     
-    <!-- Kontainer Card Login (Padding vertikal dikurangi agar lebih rapat) -->
+    <!-- Kontainer Card Login -->
     <div class="relative z-10 bg-white w-full h-full md:h-auto md:max-h-[95vh] md:max-w-[420px] md:rounded-[2rem] md:shadow-2xl flex flex-col px-6 py-4 md:px-10 md:py-6 border-0 md:border border-sky-100 overflow-y-auto overflow-x-hidden no-scrollbar">
       
       <!-- Dekorasi Gelombang Abstrak di Latar Belakang HP -->
       <div class="absolute top-[-50px] left-[-50px] w-48 h-48 bg-sky-50 rounded-full mix-blend-multiply blur-2xl opacity-60 md:hidden z-0"></div>
       <div class="absolute top-[-20px] right-[-50px] w-40 h-40 bg-blue-50 rounded-full mix-blend-multiply blur-2xl opacity-60 md:hidden z-0"></div>
 
-      <!-- Konten Form (space-y dikurangi untuk merapatkan jarak antar baris) -->
+      <!-- Konten Form -->
       <div class="w-full max-w-sm mx-auto space-y-4 relative z-10 flex-1 flex flex-col justify-center my-auto">
         
-        <!-- Maskot & Tipografi PINGO (Sedikit diperkecil untuk menghemat ruang vertikal) -->
+        <!-- Maskot & Tipografi PINGO -->
         <div class="text-center pt-0">
           <img src="login.png.png" alt="PINGO Logo" class="w-20 h-20 md:w-24 md:h-24 mx-auto object-contain relative z-10 drop-shadow-md" />
           <div class="mt-[-12px] md:mt-[-14px] flex flex-col items-center">
@@ -63,7 +63,7 @@
           <p class="text-[12px] md:text-[13px] text-slate-500 font-medium">Masuk untuk mengelola kartu NFC & QR Anda</p>
         </div>
 
-        <!-- Form Input dengan Ikon (Padding internal input diubah menjadi py-2.5) -->
+        <!-- Form Input dengan Ikon -->
         <div class="space-y-3 pt-0">
           <div class="relative flex items-center border border-slate-200 rounded-[14px] bg-white focus-within:border-[#0066ff] focus-within:ring-2 focus-within:ring-blue-100 transition-all shadow-sm">
             <div class="pl-4 pr-3 text-[#052c8f]">
@@ -86,7 +86,7 @@
           </div>
         </div>
 
-        <!-- Tombol Aksi Utama (Padding diubah menjadi py-3) -->
+        <!-- Tombol Aksi Utama -->
         <div class="space-y-2.5">
           <button type="button" onclick="handleLogin()" class="w-full py-3 pingo-btn text-white font-bold rounded-xl text-sm transition shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 group">
             Masuk ke Dashboard
@@ -97,7 +97,7 @@
             Daftar Akun Klien Baru
           </button>
           
-          <!-- Tombol Login Google OAuth (Kini disatukan tanpa pemisah 'atau') -->
+          <!-- Tombol Login Google OAuth -->
           <button type="button" onclick="handleGoogleLogin()" class="w-full py-3 px-4 bg-white hover:bg-slate-50 text-slate-700 font-bold rounded-[14px] text-sm border border-slate-200 shadow-sm flex items-center justify-center gap-3 transition">
             <svg class="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -144,7 +144,7 @@
           </div>
           <!-- Tombol Mobile Cepat -->
           <div class="flex items-center gap-2 md:hidden">
-            <button type="button" onclick="openAddCardModal()" class="px-2.5 py-1.5 pingo-btn text-white rounded-lg text-xs font-bold">
+            <button type="button" id="btn-add-card-mobile" onclick="openAddCardModal()" class="hidden px-2.5 py-1.5 pingo-btn text-white rounded-lg text-xs font-bold">
               + Kartu
             </button>
             <button type="button" onclick="handleLogout()" class="px-2.5 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold border border-slate-200">
@@ -201,9 +201,12 @@
       <!-- Banner Status Database -->
       <div id="db-status-banner" class="mb-6 px-4 py-2.5 rounded-xl bg-sky-50 border border-sky-200 text-[#021859] text-xs flex flex-wrap items-center justify-between gap-2 shadow-sm">
         <span id="db-status-text" class="flex items-center gap-2 font-medium"><i data-lucide="check-circle-2" class="w-4 h-4 text-sky-600"></i> Sistem PINGO Aktif — Satu Sentuhan, Langsung Terhubung.</span>
-        <button type="button" onclick="openAddCardModal()" class="hidden md:block px-3.5 py-1.5 pingo-btn text-white rounded-lg font-semibold transition shadow-sm">
-          + Tambah Kartu Baru
-        </button>
+        <!-- Pembungkus Khusus Admin -->
+        <div id="wrap-add-card-banner" class="hidden">
+          <button type="button" onclick="openAddCardModal()" class="hidden md:block px-3.5 py-1.5 pingo-btn text-white rounded-lg font-semibold transition shadow-sm">
+            + Tambah Kartu Baru
+          </button>
+        </div>
       </div>
 
       <!-- ========================================== -->
@@ -284,15 +287,13 @@
             </h1>
             <p class="text-sm text-slate-500 mt-1">Kelola kartu, konversi link Google Review, dan QR Code.</p>
           </div>
-          <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-            <button type="button" onclick="openAddCardModal()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm">
+          <!-- Aksi Khusus Super Admin (Tambah & Transfer) -->
+          <div id="media-admin-actions" class="hidden flex-wrap items-center gap-2 w-full sm:w-auto">
+            <button type="button" id="btn-add-card-media" onclick="openAddCardModal()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm">
               <i data-lucide="plus" class="w-4 h-4"></i> Tambah
             </button>
-            <button type="button" id="btn-transfer-card" onclick="openTransferModal()" class="hidden flex-1 sm:flex-none px-4 py-2.5 rounded-full bg-sky-500 hover:bg-sky-600 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm">
+            <button type="button" id="btn-transfer-card" onclick="openTransferModal()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-full bg-sky-500 hover:bg-sky-600 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm">
               <i data-lucide="send" class="w-3.5 h-3.5"></i> Transfer
-            </button>
-            <button type="button" onclick="openQrModal()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm">
-              <i data-lucide="qr-code" class="w-3.5 h-3.5"></i> QR & NFC
             </button>
           </div>
         </div>
@@ -348,8 +349,13 @@
             <!-- Empty State -->
             <div id="cfg-empty-state" class="py-16 text-center space-y-3">
               <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto text-xl">💳</div>
-              <p class="text-sm font-bold text-slate-700">Belum Ada Kartu NFC yang Dipilih</p>
-              <p class="text-xs text-slate-400 max-w-xs mx-auto">Klik tombol <b>+ Tambah Kartu</b> di atas untuk mendaftarkan kartu NFC kosong pertamamu.</p>
+              <p class="text-sm font-bold text-slate-700">Belum Ada Kartu NFC yang Terdaftar</p>
+              <p id="cfg-empty-desc" class="text-xs text-slate-400 max-w-xs mx-auto">Pesan kartu pintar PINGO melalui <b>Official Store</b> atau hubungi Admin untuk mendapatkan kartu baru.</p>
+              <div id="btn-empty-store" class="pt-2">
+                <button type="button" onclick="switchTab('store')" class="px-5 py-2.5 rounded-xl pingo-btn text-white text-xs font-bold shadow-sm transition inline-flex items-center gap-2">
+                  <i data-lucide="shopping-bag" class="w-3.5 h-3.5"></i> Beli Kartu di Official Store
+                </button>
+              </div>
             </div>
 
             <!-- Form Konfigurasi Kartu -->
@@ -577,7 +583,7 @@
   </div>
 
   <!-- ========================================== -->
-  <!-- MODAL TAMBAH KARTU BARU                    -->
+  <!-- MODAL TAMBAH KARTU BARU (KHUSUS ADMIN)     -->
   <!-- ========================================== -->
   <div id="modal-add-card" class="fixed inset-0 z-50 hidden bg-slate-900/60 flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
@@ -689,6 +695,10 @@
     let cards = [];
     let selectedCode = null;
     let selectedMode = "review";
+
+    function isSuperAdmin() {
+      return Boolean(currentUser && currentUser.email && currentUser.email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase());
+    }
 
     let toastTimer = null;
     function showToast(msg) {
@@ -901,7 +911,7 @@
 
     async function loadCards() {
       if (!currentUser) return;
-      const isAdmin = currentUser.email === SUPER_ADMIN_EMAIL;
+      const isAdmin = isSuperAdmin();
 
       let query = supabaseClient.from("cards").select("*").order("id", { ascending: true });
       if (!isAdmin) query = query.eq("owner_email", String(currentUser.email).toLowerCase());
@@ -1059,6 +1069,10 @@
     }
 
     function openAddCardModal() {
+      if (!isSuperAdmin()) {
+        showToast("⚠️ Hanya Admin yang dapat menambahkan kartu baru. Silakan pesan di Official Store.");
+        return;
+      }
       document.getElementById("modal-add-card").classList.remove("hidden");
       
       // 1. Buat 4 karakter acak (Huruf Kapital & Angka)
@@ -1072,35 +1086,36 @@
       document.getElementById("new-card-code").value = "WIN" + randomString;
       
       document.getElementById("new-card-name").value = "";
-      const isAdmin = currentUser && currentUser.email === SUPER_ADMIN_EMAIL;
-      document.getElementById("new-card-owner-wrap").classList.toggle("hidden", !isAdmin);
-      if (isAdmin) document.getElementById("new-card-owner").value = "";
+      document.getElementById("new-card-owner-wrap").classList.remove("hidden");
+      document.getElementById("new-card-owner").value = "";
     }
     function closeAddCardModal() { document.getElementById("modal-add-card").classList.add("hidden"); }
 
-async function submitNewCard() {
+    async function submitNewCard() {
+      if (!isSuperAdmin()) {
+        showToast("⚠️ Akses ditolak: Hanya Admin yang dapat menambahkan kartu baru.");
+        return;
+      }
+
       const code = document.getElementById("new-card-code").value.trim().toUpperCase();
       const name = document.getElementById("new-card-name").value.trim();
       let ownerEmail = String(currentUser.email).toLowerCase();
 
-      if (currentUser.email === SUPER_ADMIN_EMAIL) {
-        const inputOwner = document.getElementById("new-card-owner").value.trim().toLowerCase();
-        if (inputOwner) {
-          if (!inputOwner.includes("@")) return showToast("⚠️ Email pemilik tidak valid!");
-          ownerEmail = inputOwner;
-        }
+      const inputOwner = document.getElementById("new-card-owner").value.trim().toLowerCase();
+      if (inputOwner) {
+        if (!inputOwner.includes("@")) return showToast("⚠️ Email pemilik tidak valid!");
+        ownerEmail = inputOwner;
       }
 
       if (!code || !name) return showToast("⚠️ Kode dan nama kartu wajib diisi!");
       if (!/^[A-Z0-9_-]{3,32}$/.test(code)) return showToast("⚠️ Kode kartu hanya boleh huruf, angka, tanda - dan _ (3–32 karakter).");
 
-      // PERBAIKAN: target_url sekarang DIBUAT KOSONG ("") agar berstatus Kartu Kosongan
       const newCard = {
         card_code: code,
         owner_email: ownerEmail,
         label_name: name,
         response_mode: "review",
-        target_url: "", 
+        target_url: "", // Dikosongkan agar c.html tahu kartu ini butuh aktivasi
         status: "ACTIVE",
         tap_count: 0
       };
@@ -1117,6 +1132,7 @@ async function submitNewCard() {
     }
 
     function openTransferModal() {
+      if (!isSuperAdmin()) return;
       const card = cards.find(c => c.card_code === selectedCode);
       if (!card) return;
       document.getElementById("transfer-card-name").innerText = `"${card.label_name}"`;
@@ -1126,6 +1142,7 @@ async function submitNewCard() {
     function closeTransferModal() { document.getElementById("modal-transfer").classList.add("hidden"); }
 
     async function submitTransferCard() {
+      if (!isSuperAdmin()) return;
       const card = cards.find(c => c.card_code === selectedCode);
       const newOwner = document.getElementById("transfer-email-input").value.trim().toLowerCase();
       if (!newOwner || !newOwner.includes("@")) return showToast("⚠️ Masukkan alamat email klien yang valid!");
@@ -1171,6 +1188,7 @@ async function submitNewCard() {
       const totalTaps = cards.reduce((sum, c) => sum + (Number(c.tap_count) || 0), 0);
       const totalMedia = cards.length;
       const activeCount = cards.filter(c => c.status === "ACTIVE").length;
+      const isAdmin = isSuperAdmin();
 
       document.getElementById("ov-total-taps").innerText = totalTaps;
       document.getElementById("ov-total-media").innerText = totalMedia;
@@ -1203,7 +1221,6 @@ async function submitNewCard() {
         .filter(c => String(c.label_name || "").toLowerCase().includes(qMedia) || String(c.card_code || "").toLowerCase().includes(qMedia) || (c.owner_email && c.owner_email.toLowerCase().includes(qMedia)))
         .map(c => {
           const isSel = c.card_code === selectedCode;
-          const isAdmin = currentUser && currentUser.email === SUPER_ADMIN_EMAIL;
           return `
             <div data-code="${esc(c.card_code)}" onclick="selectCard(this.dataset.code)" class="cursor-pointer p-3.5 rounded-2xl border transition flex items-center justify-between ${isSel ? 'border-blue-500 bg-blue-50/40 shadow-sm' : 'border-slate-100 hover:bg-slate-50'}">
               <div class="flex items-center gap-3 overflow-hidden">
@@ -1270,6 +1287,30 @@ async function submitNewCard() {
     // AUTHENTICATION LOGIC (SUPABASE OAUTH & EMAIL)
     // =========================================================================
 
+    function applyRoleVisibility(isAdmin) {
+      const btnMobileAdd = document.getElementById("btn-add-card-mobile");
+      const wrapBannerAdd = document.getElementById("wrap-add-card-banner");
+      const mediaAdminActions = document.getElementById("media-admin-actions");
+      const emptyDesc = document.getElementById("cfg-empty-desc");
+      const btnEmptyStore = document.getElementById("btn-empty-store");
+
+      if (isAdmin) {
+        btnMobileAdd.classList.remove("hidden");
+        wrapBannerAdd.classList.remove("hidden");
+        mediaAdminActions.classList.remove("hidden");
+        mediaAdminActions.classList.add("flex");
+        emptyDesc.innerHTML = `Klik tombol <b>+ Tambah Kartu</b> di atas untuk mendaftarkan kartu NFC kosong pertamamu.`;
+        btnEmptyStore.classList.add("hidden");
+      } else {
+        btnMobileAdd.classList.add("hidden");
+        wrapBannerAdd.classList.add("hidden");
+        mediaAdminActions.classList.add("hidden");
+        mediaAdminActions.classList.remove("flex");
+        emptyDesc.innerHTML = `Anda belum memiliki kartu aktif. Pesan kartu pintar PINGO di <b>Official Store</b> atau hubungi Admin untuk mendapatkan kartu baru.`;
+        btnEmptyStore.classList.remove("hidden");
+      }
+    }
+
     let lastUserId = null;
     supabaseClient.auth.onAuthStateChange((event, session) => {
       if (session) {
@@ -1306,17 +1347,17 @@ async function submitNewCard() {
         }
 
         const roleBadge = document.getElementById("role-badge");
-        const transferBtn = document.getElementById("btn-transfer-card");
+        const isAdmin = isSuperAdmin();
         
-        if (currentUser.email === SUPER_ADMIN_EMAIL) {
+        if (isAdmin) {
           roleBadge.innerText = "SUPER ADMIN";
           roleBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200";
-          transferBtn.classList.remove("hidden");
         } else {
           roleBadge.innerText = "KLIEN / USER";
           roleBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200";
-          transferBtn.classList.add("hidden");
         }
+
+        applyRoleVisibility(isAdmin);
 
         // Delay sedikit agar tidak macet
         setTimeout(loadCards, 0);
@@ -1324,6 +1365,7 @@ async function submitNewCard() {
       } else {
         lastUserId = null;
         currentUser = null;
+        applyRoleVisibility(false);
         document.getElementById("login-screen").classList.remove("hidden");
         document.getElementById("dashboard-screen").classList.add("hidden");
         // Reset data array jika pindah user
@@ -1386,6 +1428,9 @@ async function submitNewCard() {
     async function handleLogout() {
       await supabaseClient.auth.signOut();
     }
+
+    // Memicu pembuatan ikon secara global saat web pertama kali dibuka
+    lucide.createIcons();
   </script>
 </body>
 </html>
