@@ -92,7 +92,7 @@
             Masuk ke Dashboard
             <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
           </button>
-          <button type="button" onclick="handleRegister()" class="w-full py-3 bg-[#f0f5ff] hover:bg-[#e6f0ff] text-[#052c8f] font-bold rounded-xl text-sm transition flex items-center justify-center gap-2 border border-blue-100">
+          <button type="button" onclick="openRegisterModal()" class="w-full py-3 bg-[#f0f5ff] hover:bg-[#e6f0ff] text-[#052c8f] font-bold rounded-xl text-sm transition flex items-center justify-center gap-2 border border-blue-100">
             <i data-lucide="user-plus" class="w-4 h-4"></i>
             Daftar Akun Klien Baru
           </button>
@@ -682,6 +682,64 @@
   </div>
 
   <!-- ========================================== -->
+  <!-- MODAL DAFTAR AKUN BARU                     -->
+  <!-- ========================================== -->
+  <div id="modal-register" class="fixed inset-0 z-[60] hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-sky-100">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-blue-50 text-[#0066ff] flex items-center justify-center">
+            <i data-lucide="user-plus" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-extrabold text-[#021859]">Daftar Akun Baru</h3>
+            <p class="text-[11px] text-slate-500">Buat akun klien untuk mengelola kartu PINGO</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeRegisterModal()" class="text-slate-400 hover:text-slate-600 p-1">✕</button>
+      </div>
+
+      <div class="space-y-3">
+        <!-- Input Email -->
+        <div class="relative flex items-center border border-slate-200 rounded-[14px] bg-white focus-within:border-[#0066ff] focus-within:ring-2 focus-within:ring-blue-100 transition-all shadow-sm">
+          <div class="pl-4 pr-3 text-[#052c8f]">
+            <i data-lucide="mail" class="w-4 h-4"></i>
+          </div>
+          <div class="h-5 w-px bg-slate-200"></div>
+          <input type="email" id="reg-email" placeholder="Alamat Email" class="w-full pl-3 pr-4 py-2.5 bg-transparent text-[13px] font-medium outline-none text-slate-700 placeholder:font-normal" />
+        </div>
+
+        <!-- Input Password -->
+        <div class="relative flex items-center border border-slate-200 rounded-[14px] bg-white focus-within:border-[#0066ff] focus-within:ring-2 focus-within:ring-blue-100 transition-all shadow-sm">
+          <div class="pl-4 pr-3 text-[#052c8f]">
+            <i data-lucide="lock" class="w-4 h-4"></i>
+          </div>
+          <div class="h-5 w-px bg-slate-200"></div>
+          <input type="password" id="reg-password" placeholder="Password (min. 6 karakter)" class="w-full pl-3 pr-4 py-2.5 bg-transparent text-[13px] font-medium outline-none text-slate-700 placeholder:font-normal" />
+        </div>
+
+        <!-- Input Ulangi Password -->
+        <div class="relative flex items-center border border-slate-200 rounded-[14px] bg-white focus-within:border-[#0066ff] focus-within:ring-2 focus-within:ring-blue-100 transition-all shadow-sm">
+          <div class="pl-4 pr-3 text-[#052c8f]">
+            <i data-lucide="check-circle" class="w-4 h-4"></i>
+          </div>
+          <div class="h-5 w-px bg-slate-200"></div>
+          <input type="password" id="reg-confirm-password" placeholder="Ulangi Password" class="w-full pl-3 pr-4 py-2.5 bg-transparent text-[13px] font-medium outline-none text-slate-700 placeholder:font-normal" />
+        </div>
+      </div>
+
+      <div id="reg-status-msg" class="hidden p-3 rounded-xl text-xs leading-relaxed"></div>
+
+      <div class="flex justify-end gap-2 pt-1">
+        <button type="button" onclick="closeRegisterModal()" class="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition">Batal</button>
+        <button type="button" id="btn-submit-register" onclick="handleRegister()" class="px-6 py-2.5 rounded-xl pingo-btn text-white text-xs font-bold shadow-md shadow-blue-500/20 flex items-center gap-2 transition">
+          <i data-lucide="check" class="w-4 h-4"></i> Selesai
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
   <!-- MODAL LUPA PASSWORD (KIRIM EMAIL VERIFIKASI) -->
   <!-- ========================================== -->
   <div id="modal-forgot-password" class="fixed inset-0 z-[60] hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
@@ -795,7 +853,7 @@
       document.getElementById("toast-text").innerText = msg;
       box.classList.remove("hidden");
       clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => box.classList.add("hidden"), 3500);
+      toastTimer = setTimeout(() => box.classList.add("hidden"), 4000);
     }
 
     // Escape HTML (Keamanan XSS)
@@ -1373,11 +1431,105 @@
     }
 
     // =========================================================================
-    // AUTHENTICATION LOGIC (SUPABASE OAUTH & EMAIL)
+    // AUTHENTICATION LOGIC (SUPABASE OAUTH, REGISTER & FORGOT PASSWORD)
     // =========================================================================
 
     let isRecoveryFromUrl = window.location.hash.includes("type=recovery") || window.location.search.includes("type=recovery");
 
+    // --- Modal Daftar Akun ---
+    function openRegisterModal() {
+      const loginEmail = (document.getElementById("auth-email").value || "").trim();
+      const emailEl = document.getElementById("reg-email");
+      const passEl = document.getElementById("reg-password");
+      const confirmEl = document.getElementById("reg-confirm-password");
+      const statusEl = document.getElementById("reg-status-msg");
+
+      emailEl.value = loginEmail;
+      passEl.value = "";
+      confirmEl.value = "";
+      statusEl.classList.add("hidden");
+      statusEl.innerHTML = "";
+
+      document.getElementById("modal-register").classList.remove("hidden");
+      lucide.createIcons();
+      setTimeout(() => (loginEmail ? passEl.focus() : emailEl.focus()), 50);
+    }
+
+    function closeRegisterModal() {
+      document.getElementById("modal-register").classList.add("hidden");
+    }
+
+    async function handleRegister() {
+      const email = (document.getElementById("reg-email").value || "").trim().toLowerCase();
+      const password = document.getElementById("reg-password").value;
+      const confirmPassword = document.getElementById("reg-confirm-password").value;
+      const statusEl = document.getElementById("reg-status-msg");
+      const btn = document.getElementById("btn-submit-register");
+      const originalBtnHtml = btn.innerHTML;
+
+      statusEl.classList.add("hidden");
+
+      // Validasi input form
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        statusEl.className = "p-3 rounded-xl text-xs leading-relaxed bg-rose-50 border border-rose-200 text-rose-700 font-semibold";
+        statusEl.innerText = "Masukkan alamat email yang valid terlebih dahulu.";
+        return;
+      }
+
+      if (!password || password.length < 6) {
+        statusEl.className = "p-3 rounded-xl text-xs leading-relaxed bg-rose-50 border border-rose-200 text-rose-700 font-semibold";
+        statusEl.innerText = "Password minimal harus 6 karakter.";
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        statusEl.className = "p-3 rounded-xl text-xs leading-relaxed bg-rose-50 border border-rose-200 text-rose-700 font-semibold";
+        statusEl.innerText = "Konfirmasi password tidak cocok. Silakan ulangi password dengan benar.";
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = "⏳ Mendaftar...";
+
+      try {
+        const redirectUrl = window.location.origin + window.location.pathname;
+        const { data, error } = await supabaseClient.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: redirectUrl }
+        });
+
+        if (error) {
+          statusEl.className = "p-3 rounded-xl text-xs leading-relaxed bg-rose-50 border border-rose-200 text-rose-700 font-semibold";
+          statusEl.innerText = "Gagal mendaftar: " + error.message;
+        } else if (data && data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+          // Deteksi jika email sudah pernah terdaftar sebelumnya di Supabase
+          statusEl.className = "p-3 rounded-xl text-xs leading-relaxed bg-amber-50 border border-amber-200 text-amber-800 font-semibold";
+          statusEl.innerText = "Email ini sudah terdaftar. Silakan langsung masuk atau gunakan fitur Lupa Password.";
+        } else if (data && data.session) {
+          // Jika Confirm Email dimatikan di Supabase: langsung masuk ke Dashboard
+          closeRegisterModal();
+          showToast("🎉 yeayy, akunmu berhasil dibuat");
+        } else {
+          // Jika Confirm Email aktif di Supabase: tampilkan notifikasi sukses & info cek email
+          document.getElementById("auth-email").value = email;
+          statusEl.className = "p-3 rounded-xl text-xs leading-relaxed bg-emerald-50 border border-emerald-200 text-emerald-800";
+          statusEl.innerHTML = `🎉 <b>yeayy, akunmu berhasil dibuat!</b> Silakan cek kotak masuk (atau folder <b>Spam</b>) di <b>${esc(email)}</b> untuk konfirmasi email, lalu masuk ke Dashboard.`;
+          showToast("🎉 yeayy, akunmu berhasil dibuat");
+          document.getElementById("reg-password").value = "";
+          document.getElementById("reg-confirm-password").value = "";
+        }
+      } catch (err) {
+        statusEl.className = "p-3 rounded-xl text-xs leading-relaxed bg-rose-50 border border-rose-200 text-rose-700 font-semibold";
+        statusEl.innerText = "Terjadi kesalahan jaringan. Silakan coba lagi.";
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalBtnHtml;
+        lucide.createIcons();
+      }
+    }
+
+    // --- Modal Lupa Password ---
     function openForgotPasswordModal() {
       const loginEmail = (document.getElementById("auth-email").value || "").trim();
       const inputEl = document.getElementById("forgot-email-input");
@@ -1614,30 +1766,12 @@
       }
     }
 
-    async function handleRegister() {
-      const email = document.getElementById("auth-email").value.trim();
-      const password = document.getElementById("auth-password").value;
-      const errBox = document.getElementById("auth-error");
-      errBox.classList.add("hidden");
-      if (!email.includes("@") || password.length < 6) {
-        errBox.innerText = "Isi email yang valid dan password minimal 6 karakter.";
-        errBox.classList.remove("hidden");
-        return;
-      }
-
-      const { data, error } = await supabaseClient.auth.signUp({ email, password });
-      if (error) {
-        errBox.innerText = error.message;
-        errBox.classList.remove("hidden");
-      } else if (data && data.session) {
-        alert("Pendaftaran berhasil! Anda akan langsung masuk ke Dashboard.");
-      } else {
-        alert("Pendaftaran berhasil! Silakan cek email Anda untuk konfirmasi, lalu masuk.");
-      }
-    }
-
     ["auth-email", "auth-password"].forEach(id =>
       document.getElementById(id).addEventListener("keydown", e => { if (e.key === "Enter") handleLogin(); })
+    );
+
+    ["reg-email", "reg-password", "reg-confirm-password"].forEach(id =>
+      document.getElementById(id).addEventListener("keydown", e => { if (e.key === "Enter") handleRegister(); })
     );
 
     document.getElementById("forgot-email-input").addEventListener("keydown", e => {
