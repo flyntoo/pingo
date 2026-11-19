@@ -67,7 +67,7 @@
         <div class="space-y-3 pt-0">
           <div class="relative flex items-center border border-slate-200 rounded-[14px] bg-white focus-within:border-[#0066ff] focus-within:ring-2 focus-within:ring-blue-100 transition-all shadow-sm">
             <div class="pl-4 pr-3 text-[#052c8f]">
-                <i data-lucide="mail" class="w-5 h-5"></i>
+              <i data-lucide="mail" class="w-5 h-5"></i>
             </div>
             <div class="h-6 w-px bg-slate-200"></div>
             <input type="email" id="auth-email" placeholder="Alamat Email" class="w-full pl-3 pr-4 py-2.5 bg-transparent text-[13px] font-medium outline-none text-slate-700 placeholder:font-normal" />
@@ -75,14 +75,14 @@
           
           <div class="relative flex items-center border border-slate-200 rounded-[14px] bg-white focus-within:border-[#0066ff] focus-within:ring-2 focus-within:ring-blue-100 transition-all shadow-sm">
             <div class="pl-4 pr-3 text-[#052c8f]">
-                <i data-lucide="lock" class="w-5 h-5"></i>
+              <i data-lucide="lock" class="w-5 h-5"></i>
             </div>
             <div class="h-6 w-px bg-slate-200"></div>
             <input type="password" id="auth-password" placeholder="Password (min. 6 karakter)" class="w-full pl-3 pr-4 py-2.5 bg-transparent text-[13px] font-medium outline-none text-slate-700 placeholder:font-normal" />
           </div>
           
           <div class="text-right">
-              <button type="button" onclick="openForgotPasswordModal()" class="text-[12px] font-semibold text-[#0066ff] hover:underline">Lupa password?</button>
+            <button type="button" onclick="openForgotPasswordModal()" class="text-[12px] font-semibold text-[#0066ff] hover:underline">Lupa password?</button>
           </div>
         </div>
 
@@ -596,7 +596,7 @@
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Kafe / Label Kartu</label>
-          <input type="text" id="new-card-name" placeholder="Contoh: Kopi Senja Kasir 1" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs" />
+          <input type="text" id="new-card-name" placeholder="Contoh: Kartu Kosong Stok 1" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs" />
         </div>
         <div id="new-card-owner-wrap" class="hidden">
           <label class="block text-xs font-semibold text-indigo-700 mb-1">Email Pemilik Kartu (Khusus Admin)</label>
@@ -682,7 +682,7 @@
   </div>
 
   <!-- ========================================== -->
-  <!-- MODAL DAFTAR AKUN BARU                     -->
+  <!-- MODAL DAFTAR AKUN KLIEN BARU               -->
   <!-- ========================================== -->
   <div id="modal-register" class="fixed inset-0 z-[60] hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-sky-100">
@@ -693,13 +693,22 @@
           </div>
           <div>
             <h3 class="text-base font-extrabold text-[#021859]">Daftar Akun Baru</h3>
-            <p class="text-[11px] text-slate-500">Buat akun klien untuk mengelola kartu PINGO</p>
+            <p class="text-[11px] text-slate-500">Buat akun klien PINGO Anda</p>
           </div>
         </div>
         <button type="button" onclick="closeRegisterModal()" class="text-slate-400 hover:text-slate-600 p-1">✕</button>
       </div>
 
       <div class="space-y-3">
+        <!-- Input Nama Lengkap -->
+        <div class="relative flex items-center border border-slate-200 rounded-[14px] bg-white focus-within:border-[#0066ff] focus-within:ring-2 focus-within:ring-blue-100 transition-all shadow-sm">
+          <div class="pl-4 pr-3 text-[#052c8f]">
+            <i data-lucide="user" class="w-4 h-4"></i>
+          </div>
+          <div class="h-5 w-px bg-slate-200"></div>
+          <input type="text" id="reg-name" placeholder="Nama Lengkap / Nama Usaha" class="w-full pl-3 pr-4 py-2.5 bg-transparent text-[13px] font-medium outline-none text-slate-700 placeholder:font-normal" />
+        </div>
+
         <!-- Input Email -->
         <div class="relative flex items-center border border-slate-200 rounded-[14px] bg-white focus-within:border-[#0066ff] focus-within:ring-2 focus-within:ring-blue-100 transition-all shadow-sm">
           <div class="pl-4 pr-3 text-[#052c8f]">
@@ -1439,11 +1448,13 @@
     // --- Modal Daftar Akun ---
     function openRegisterModal() {
       const loginEmail = (document.getElementById("auth-email").value || "").trim();
+      const nameEl = document.getElementById("reg-name");
       const emailEl = document.getElementById("reg-email");
       const passEl = document.getElementById("reg-password");
       const confirmEl = document.getElementById("reg-confirm-password");
       const statusEl = document.getElementById("reg-status-msg");
 
+      nameEl.value = "";
       emailEl.value = loginEmail;
       passEl.value = "";
       confirmEl.value = "";
@@ -1452,7 +1463,7 @@
 
       document.getElementById("modal-register").classList.remove("hidden");
       lucide.createIcons();
-      setTimeout(() => (loginEmail ? passEl.focus() : emailEl.focus()), 50);
+      setTimeout(() => nameEl.focus(), 50);
     }
 
     function closeRegisterModal() {
@@ -1460,6 +1471,7 @@
     }
 
     async function handleRegister() {
+      const fullName = (document.getElementById("reg-name").value || "").trim();
       const email = (document.getElementById("reg-email").value || "").trim().toLowerCase();
       const password = document.getElementById("reg-password").value;
       const confirmPassword = document.getElementById("reg-confirm-password").value;
@@ -1469,7 +1481,12 @@
 
       statusEl.classList.add("hidden");
 
-      // Validasi input form
+      if (!fullName || fullName.length < 2) {
+        statusEl.className = "p-3 rounded-xl text-xs leading-relaxed bg-rose-50 border border-rose-200 text-rose-700 font-semibold";
+        statusEl.innerText = "Masukkan nama lengkap atau nama usaha Anda (minimal 2 karakter).";
+        return;
+      }
+
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         statusEl.className = "p-3 rounded-xl text-xs leading-relaxed bg-rose-50 border border-rose-200 text-rose-700 font-semibold";
         statusEl.innerText = "Masukkan alamat email yang valid terlebih dahulu.";
@@ -1496,26 +1513,27 @@
         const { data, error } = await supabaseClient.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: redirectUrl }
+          options: {
+            emailRedirectTo: redirectUrl,
+            data: { full_name: fullName }
+          }
         });
 
         if (error) {
           statusEl.className = "p-3 rounded-xl text-xs leading-relaxed bg-rose-50 border border-rose-200 text-rose-700 font-semibold";
           statusEl.innerText = "Gagal mendaftar: " + error.message;
         } else if (data && data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
-          // Deteksi jika email sudah pernah terdaftar sebelumnya di Supabase
           statusEl.className = "p-3 rounded-xl text-xs leading-relaxed bg-amber-50 border border-amber-200 text-amber-800 font-semibold";
           statusEl.innerText = "Email ini sudah terdaftar. Silakan langsung masuk atau gunakan fitur Lupa Password.";
         } else if (data && data.session) {
-          // Jika Confirm Email dimatikan di Supabase: langsung masuk ke Dashboard
           closeRegisterModal();
           showToast("🎉 yeayy, akunmu berhasil dibuat");
         } else {
-          // Jika Confirm Email aktif di Supabase: tampilkan notifikasi sukses & info cek email
           document.getElementById("auth-email").value = email;
           statusEl.className = "p-3 rounded-xl text-xs leading-relaxed bg-emerald-50 border border-emerald-200 text-emerald-800";
           statusEl.innerHTML = `🎉 <b>yeayy, akunmu berhasil dibuat!</b> Silakan cek kotak masuk (atau folder <b>Spam</b>) di <b>${esc(email)}</b> untuk konfirmasi email, lalu masuk ke Dashboard.`;
           showToast("🎉 yeayy, akunmu berhasil dibuat");
+          document.getElementById("reg-name").value = "";
           document.getElementById("reg-password").value = "";
           document.getElementById("reg-confirm-password").value = "";
         }
@@ -1554,14 +1572,14 @@
 
       statusEl.classList.add("hidden");
 
-      if (!email || !email.includes("@")) {
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         statusEl.className = "p-3 rounded-xl text-xs leading-relaxed bg-rose-50 border border-rose-200 text-rose-700 font-semibold";
         statusEl.innerText = "Masukkan alamat email yang valid terlebih dahulu.";
         return;
       }
 
       btn.disabled = true;
-      btn.innerHTML = "⏳ Mengirim...";
+      btn.innerHTML = "⏳ Mengirim email...";
 
       try {
         const redirectUrl = window.location.origin + window.location.pathname;
@@ -1574,7 +1592,7 @@
           statusEl.innerText = "Gagal mengirim email verifikasi: " + error.message;
         } else {
           statusEl.className = "p-3 rounded-xl text-xs leading-relaxed bg-emerald-50 border border-emerald-200 text-emerald-800";
-          statusEl.innerHTML = `✅ <b>Email verifikasi terkirim!</b> Silakan cek kotak masuk (atau folder <b>Spam</b>) di <b>${esc(email)}</b>, lalu klik tautan verifikasi untuk membuat password baru.`;
+          statusEl.innerHTML = `✅ <b>Email verifikasi telah dikirim!</b> Silakan cek kotak masuk (atau folder <b>Spam</b>) di <b>${esc(email)}</b>, lalu klik tautan di dalamnya untuk membuat password baru.`;
           showToast("📧 Email verifikasi reset password telah dikirim!");
         }
       } catch (err) {
@@ -1587,6 +1605,7 @@
       }
     }
 
+    // --- Modal Buat Password Baru (Recovery) ---
     function openResetPasswordModal() {
       document.getElementById("reset-new-password").value = "";
       document.getElementById("reset-confirm-password").value = "";
@@ -1595,6 +1614,7 @@
       errEl.innerText = "";
       document.getElementById("modal-reset-password").classList.remove("hidden");
       lucide.createIcons();
+      setTimeout(() => document.getElementById("reset-new-password").focus(), 50);
     }
 
     function closeResetPasswordModal() {
@@ -1623,7 +1643,7 @@
       }
 
       btn.disabled = true;
-      btn.innerHTML = "⏳ Menyimpan Password...";
+      btn.innerHTML = "⏳ Menyimpan password...";
 
       try {
         const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
@@ -1632,14 +1652,13 @@
           errEl.classList.remove("hidden");
         } else {
           closeResetPasswordModal();
-          // Bersihkan parameter recovery dari URL agar bersih
           if (window.history && window.history.replaceState) {
             window.history.replaceState(null, "", window.location.pathname);
           }
-          showToast("✅ Password baru berhasil disimpan! Anda kini masuk ke Dashboard.");
+          showToast("✅ Password baru berhasil disimpan!");
         }
       } catch (err) {
-        errEl.innerText = "Terjadi kesalahan saat menyimpan password.";
+        errEl.innerText = "Terjadi kesalahan jaringan. Silakan coba lagi.";
         errEl.classList.remove("hidden");
       } finally {
         btn.disabled = false;
@@ -1648,34 +1667,10 @@
       }
     }
 
-    function applyRoleVisibility(isAdmin) {
-      const btnMobileAdd = document.getElementById("btn-add-card-mobile");
-      const wrapBannerAdd = document.getElementById("wrap-add-card-banner");
-      const mediaAdminActions = document.getElementById("media-admin-actions");
-      const emptyDesc = document.getElementById("cfg-empty-desc");
-      const btnEmptyStore = document.getElementById("btn-empty-store");
-
-      if (isAdmin) {
-        btnMobileAdd.classList.remove("hidden");
-        wrapBannerAdd.classList.remove("hidden");
-        mediaAdminActions.classList.remove("hidden");
-        mediaAdminActions.classList.add("flex");
-        emptyDesc.innerHTML = `Klik tombol <b>+ Tambah Kartu</b> di atas untuk mendaftarkan kartu NFC kosong pertamamu.`;
-        btnEmptyStore.classList.add("hidden");
-      } else {
-        btnMobileAdd.classList.add("hidden");
-        wrapBannerAdd.classList.add("hidden");
-        mediaAdminActions.classList.add("hidden");
-        mediaAdminActions.classList.remove("flex");
-        emptyDesc.innerHTML = `Anda belum memiliki kartu aktif. Pesan kartu pintar PINGO di <b>Official Store</b> atau hubungi Admin untuk mendapatkan kartu baru.`;
-        btnEmptyStore.classList.remove("hidden");
-      }
-    }
-
+    // --- State Auth Utama ---
     let lastUserId = null;
     supabaseClient.auth.onAuthStateChange((event, session) => {
-      // Tangkap event saat klien mengklik link verifikasi reset password dari email
-      if (event === "PASSWORD_RECOVERY" || (session && isRecoveryFromUrl)) {
+      if (event === "PASSWORD_RECOVERY" || (isRecoveryFromUrl && session)) {
         isRecoveryFromUrl = false;
         openResetPasswordModal();
       }
@@ -1683,13 +1678,14 @@
       if (session) {
         const sameUser = lastUserId === session.user.id;
         currentUser = session.user;
-        if (sameUser) return;
         lastUserId = session.user.id;
+
         document.getElementById("login-screen").classList.add("hidden");
         document.getElementById("dashboard-screen").classList.remove("hidden");
-        
-        let emailName = currentUser.email.split('@')[0];
-        let displayName = currentUser.user_metadata?.full_name || (emailName.charAt(0).toUpperCase() + emailName.slice(1));
+
+        let emailName = currentUser.email.split("@")[0];
+        let metaName = (currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || "").trim();
+        let displayName = metaName || (emailName.charAt(0).toUpperCase() + emailName.slice(1));
         let avatarUrl = currentUser.user_metadata?.avatar_url;
 
         document.getElementById("ov-greeting-name").innerText = displayName.split(" ")[0];
@@ -1704,45 +1700,63 @@
           [sAvatar, stAvatar].forEach(el => {
             el.innerHTML = "";
             const im = document.createElement("img");
-            im.src = avatarUrl; im.referrerPolicy = "no-referrer";
+            im.src = avatarUrl;
+            im.referrerPolicy = "no-referrer";
             im.className = "w-full h-full object-cover rounded-full";
             el.appendChild(im);
           });
         } else {
-          const init = displayName.substring(0, 2).toUpperCase();
-          sAvatar.innerHTML = init; stAvatar.innerHTML = init;
+          const nameParts = displayName.split(/\s+/).filter(Boolean);
+          const init = nameParts.length >= 2
+            ? (nameParts[0][0] + nameParts[1][0]).toUpperCase()
+            : displayName.substring(0, 2).toUpperCase();
+          sAvatar.innerHTML = init;
+          stAvatar.innerHTML = init;
         }
 
+        const admin = isSuperAdmin();
         const roleBadge = document.getElementById("role-badge");
-        const isAdmin = isSuperAdmin();
-        
-        if (isAdmin) {
+        const btnAddMobile = document.getElementById("btn-add-card-mobile");
+        const wrapAddBanner = document.getElementById("wrap-add-card-banner");
+        const mediaAdminActions = document.getElementById("media-admin-actions");
+        const cfgEmptyDesc = document.getElementById("cfg-empty-desc");
+        const btnEmptyStore = document.getElementById("btn-empty-store");
+
+        if (admin) {
           roleBadge.innerText = "SUPER ADMIN";
           roleBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200";
+          btnAddMobile.classList.remove("hidden");
+          wrapAddBanner.classList.remove("hidden");
+          mediaAdminActions.classList.remove("hidden");
+          mediaAdminActions.classList.add("flex");
+          cfgEmptyDesc.innerHTML = "Klik tombol <b>+ Tambah</b> di atas untuk mendaftarkan kartu NFC kosong baru.";
+          btnEmptyStore.classList.add("hidden");
         } else {
           roleBadge.innerText = "KLIEN / USER";
           roleBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200";
+          btnAddMobile.classList.add("hidden");
+          wrapAddBanner.classList.add("hidden");
+          mediaAdminActions.classList.add("hidden");
+          mediaAdminActions.classList.remove("flex");
+          cfgEmptyDesc.innerHTML = "Pesan kartu pintar PINGO melalui <b>Official Store</b> atau hubungi Admin untuk mendapatkan kartu baru.";
+          btnEmptyStore.classList.remove("hidden");
         }
 
-        applyRoleVisibility(isAdmin);
-
-        // Delay sedikit agar tidak macet
-        setTimeout(loadCards, 0);
-
+        if (!sameUser) {
+          setTimeout(loadCards, 0);
+        }
       } else {
         lastUserId = null;
         currentUser = null;
-        applyRoleVisibility(false);
         document.getElementById("login-screen").classList.remove("hidden");
         document.getElementById("dashboard-screen").classList.add("hidden");
-        // Reset data array jika pindah user
-        cards = []; 
+        cards = [];
       }
     });
 
     async function handleGoogleLogin() {
       const { error } = await supabaseClient.auth.signInWithOAuth({
-        provider: 'google',
+        provider: "google",
         options: { redirectTo: window.location.origin + window.location.pathname }
       });
       if (error) {
@@ -1757,7 +1771,11 @@
       const password = document.getElementById("auth-password").value;
       const errBox = document.getElementById("auth-error");
       errBox.classList.add("hidden");
-      if (!email || !password) { errBox.innerText = "Email dan password wajib diisi."; errBox.classList.remove("hidden"); return; }
+      if (!email || !password) {
+        errBox.innerText = "Email dan password wajib diisi.";
+        errBox.classList.remove("hidden");
+        return;
+      }
 
       const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
       if (error) {
@@ -1766,25 +1784,23 @@
       }
     }
 
-    ["auth-email", "auth-password"].forEach(id =>
-      document.getElementById(id).addEventListener("keydown", e => { if (e.key === "Enter") handleLogin(); })
-    );
-
-    ["reg-email", "reg-password", "reg-confirm-password"].forEach(id =>
-      document.getElementById(id).addEventListener("keydown", e => { if (e.key === "Enter") handleRegister(); })
-    );
-
-    document.getElementById("forgot-email-input").addEventListener("keydown", e => {
-      if (e.key === "Enter") handleForgotPassword();
-    });
-
-    ["reset-new-password", "reset-confirm-password"].forEach(id =>
-      document.getElementById(id).addEventListener("keydown", e => { if (e.key === "Enter") handleUpdateNewPassword(); })
-    );
-
     async function handleLogout() {
       await supabaseClient.auth.signOut();
     }
+
+    // Shortcut tombol Enter pada semua form autentikasi
+    ["auth-email", "auth-password"].forEach(id =>
+      document.getElementById(id).addEventListener("keydown", e => { if (e.key === "Enter") handleLogin(); })
+    );
+    ["reg-name", "reg-email", "reg-password", "reg-confirm-password"].forEach(id =>
+      document.getElementById(id).addEventListener("keydown", e => { if (e.key === "Enter") handleRegister(); })
+    );
+    document.getElementById("forgot-email-input").addEventListener("keydown", e => {
+      if (e.key === "Enter") handleForgotPassword();
+    });
+    ["reset-new-password", "reset-confirm-password"].forEach(id =>
+      document.getElementById(id).addEventListener("keydown", e => { if (e.key === "Enter") handleUpdateNewPassword(); })
+    );
 
     // Memicu pembuatan ikon secara global saat web pertama kali dibuka
     lucide.createIcons();
